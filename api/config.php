@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 // Configurações do banco MySQL Hostinger
 class DatabaseConfig {
-    private $host = 'srv406.hstgr.io'; // ou o host fornecido pela Hostinger
+    private $host = 'p:srv406.hstgr.io'; // ou o host fornecido pela Hostinger
     private $db_name = 'u383946504_sce'; // nome do banco
     private $username = 'u383946504_sce'; // usuário
     private $password = 'Aaku_2004'; // senha fornecida
