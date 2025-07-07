@@ -51,8 +51,8 @@ class DatabaseConfig {
             error_log("Erro de conexão com o banco de dados: " . $exception->getMessage());
             // Define o código de status HTTP para 500 (Internal Server Error)
             http_response_code(500);
-            // Retorna uma resposta JSON com a mensagem de erro
-            echo json_encode(['erro' => 'Não foi possível conectar ao banco de dados. Verifique as credenciais ou o status do servidor.', 'detalhe' => $exception->getMessage()], JSON_UNESCAPED_UNICODE);
+            // Retorna uma resposta JSON com a mensagem de erro, incluindo o detalhe do erro de acesso negado
+            echo json_encode(['erro' => 'Não foi possível conectar ao banco de dados. Acesso negado. Verifique as credenciais (usuário/senha) e as permissões de IP no seu provedor de hospedagem.', 'detalhe' => $exception->getMessage()], JSON_UNESCAPED_UNICODE);
             exit(); // Encerra a execução do script
         }
 
