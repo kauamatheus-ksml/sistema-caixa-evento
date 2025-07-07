@@ -1,0 +1,1 @@
+echo "# sistema-caixa-evento" > README.md
