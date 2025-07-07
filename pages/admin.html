@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<!-- Arquivo: admin.html - Interface administrativa do CaixaEvent -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaixaEvent - Administração</title>
+    <meta name="description" content="Painel administrativo do sistema CaixaEvent">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div class="admin-login" id="telaLogin">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-shield-alt login-icon"></i>
+                <h2 class="login-title">Área Administrativa</h2>
+                <p>Acesso restrito - Digite a senha administrativa</p>
+            </div>
+            
+            <form id="formLogin" onsubmit="return false;">
+                <div class="form-group">
+                    <label for="senhaAdmin" class="form-label">
+                        <i class="fas fa-lock"></i>
+                        Senha Administrativa
+                    </label>
+                    <input type="password" 
+                           id="senhaAdmin" 
+                           class="form-input" 
+                           placeholder="Digite a senha..."
+                           autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="realizarLogin()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Entrar no Sistema
+                </button>
+            </form>
+            
+            <div class="login-footer">
+                <small>
+                    <i class="fas fa-info-circle"></i>
+                    Sistema protegido com autenticação administrativa
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel Administrativo -->
+    <div class="admin-panel" id="painelAdmin" style="display: none;">
+        <!-- Header Administrativo -->
+        <header class="header">
+            <button class="back-btn" onclick="voltarPagina()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1>
+                <i class="fas fa-cog"></i>
+                Painel Administrativo
+            </h1>
+            <div class="admin-header-actions">
+                <div class="admin-info">
+                    <span class="admin-user">
+                        <i class="fas fa-user-shield"></i>
+                        Administrador
+                    </span>
+                    <span class="last-update">
+                        Última atualização: <span id="ultimaAtualizacao">--:--</span>
+                    </span>
+                </div>
+                <button class="btn btn-outline" onclick="realizarLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </button>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Dashboard Administrativo -->
+            <section class="admin-dashboard">
+                <h3 class="section-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard do Sistema
+                </h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="dashTotalCartoes">0</div>
+                            <div class="stat-label">Total de Cartões</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card green">
+                        <div class="stat-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="dashSaldoTotal">R$ 0,00</div>
+                            <div class="stat-label">Saldo Total Sistema</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card purple">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="dashVendasHoje">R$ 0,00</div>
+                            <div class="stat-label">Vendas Hoje</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card orange">
+                        <div class="stat-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="dashRecargasHoje">R$ 0,00</div>
+                            <div class="stat-label">Recargas Hoje</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seções Administrativas -->
+            <div class="admin-sections">
+                <!-- Correção de Saldos -->
+                <section class="admin-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-edit"></i>
+                        Correção de Saldos
+                    </h3>
+                    
+                    <form id="formCorrecaoSaldo" onsubmit="return false;">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="numeroCartaoCorrecao" class="form-label">
+                                    Número do Cartão
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           id="numeroCartaoCorrecao" 
+                                           class="form-input" 
+                                           placeholder="0000 0000 0000 0000"
+                                           maxlength="19">
+                                    <button type="button" class="btn btn-outline" onclick="buscarCartaoCorrecao()">
+                                        <i class="fas fa-search"></i>
+                                        Buscar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-correction-info" id="infoCartaoCorrecao">
+                            <!-- Informações do cartão aparecerão aqui -->
+                        </div>
+
+                        <div class="correction-form" id="divCorrecaoSaldo" style="display: none;">
+                            <div class="current-balance-correction">
+                                <div class="balance-label">Saldo Atual</div>
+                                <div class="balance-value" id="saldoAtualCorrecao">R$ 0,00</div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="novoSaldoCorrecao" class="form-label">
+                                        Novo Saldo (R$)
+                                    </label>
+                                    <input type="number" 
+                                           id="novoSaldoCorrecao" 
+                                           class="form-input" 
+                                           placeholder="0,00"
+                                           step="0.01"
+                                           min="0"
+                                           max="10000">
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="motivoCorrecao" class="form-label">
+                                        Motivo da Correção *
+                                    </label>
+                                    <textarea id="motivoCorrecao" 
+                                              class="form-input" 
+                                              rows="3"
+                                              placeholder="Descreva o motivo da correção de saldo..."
+                                              required></textarea>
+                                    <small class="form-help">
+                                        Obrigatório: Mínimo 10 caracteres para auditoria
+                                    </small>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-warning btn-lg" onclick="corrigirSaldo()">
+                                <i class="fas fa-edit"></i>
+                                Corrigir Saldo
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Relatórios do Sistema -->
+                <section class="admin-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Relatórios do Sistema
+                    </h3>
+                    
+                    <div class="reports-controls">
+                        <button class="btn btn-primary" onclick="gerarRelatorio()">
+                            <i class="fas fa-file-alt"></i>
+                            Gerar Relatório Completo
+                        </button>
+                        <button class="btn btn-success" onclick="exportarRelatorio()">
+                            <i class="fas fa-download"></i>
+                            Exportar Relatório
+                        </button>
+                    </div>
+
+                    <div class="reports-content" id="secaoRelatorios" style="display: none;">
+                        <!-- Estatísticas Gerais -->
+                        <div class="report-section">
+                            <h4>
+                                <i class="fas fa-chart-pie"></i>
+                                Estatísticas Gerais
+                            </h4>
+                            <div id="relatorioEstatisticas">
+                                <!-- Conteúdo será preenchido pelo JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Transações Recentes -->
+                        <div class="report-section">
+                            <h4>
+                                <i class="fas fa-exchange-alt"></i>
+                                Transações do Dia
+                            </h4>
+                            <div class="table-responsive">
+                                <div id="relatorioTransacoes">
+                                    <!-- Tabela será preenchida pelo JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Cartões -->
+                        <div class="report-section">
+                            <h4>
+                                <i class="fas fa-trophy"></i>
+                                Top 10 Cartões por Saldo
+                            </h4>
+                            <div class="table-responsive">
+                                <div id="relatorioCartoes">
+                                    <!-- Tabela será preenchida pelo JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Log de Operações -->
+                <section class="admin-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Log de Operações de Segurança
+                    </h3>
+                    
+                    <div class="log-container">
+                        <div class="log-header">
+                            <p>
+                                <i class="fas fa-info-circle"></i>
+                                Registro de todas as operações administrativas para auditoria
+                            </p>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <div id="logOperacoes">
+                                <div class="log-loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>Carregando log de operações...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Backup e Restore -->
+                <section class="admin-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-database"></i>
+                        Backup e Restauração
+                    </h3>
+                    
+                    <div class="backup-controls">
+                        <div class="backup-section">
+                            <h4>
+                                <i class="fas fa-download"></i>
+                                Fazer Backup
+                            </h4>
+                            <p>Baixe uma cópia completa de todos os dados do sistema</p>
+                            <button class="btn btn-primary btn-lg" onclick="fazerBackup()">
+                                <i class="fas fa-download"></i>
+                                Gerar e Baixar Backup
+                            </button>
+                        </div>
+
+                        <div class="restore-section">
+                            <h4>
+                                <i class="fas fa-upload"></i>
+                                Restaurar Backup
+                            </h4>
+                            <p>
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                <strong>ATENÇÃO:</strong> Esta operação substituirá todos os dados atuais
+                            </p>
+                            
+                            <div class="file-upload-area" onclick="document.getElementById('inputRestore').click()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Clique para selecionar arquivo de backup</span>
+                                <small>Formato: .json</small>
+                            </div>
+                            
+                            <input type="file" 
+                                   id="inputRestore" 
+                                   accept=".json" 
+                                   style="display: none;">
+                            
+                            <button class="btn btn-warning" onclick="btnImportarDados()" id="btnImportarDados" style="display: none;">
+                                <i class="fas fa-upload"></i>
+                                Confirmar Restauração
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Configurações do Sistema -->
+                <section class="admin-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cogs"></i>
+                        Configurações do Sistema
+                    </h3>
+                    
+                    <form id="formConfiguracoes" onsubmit="return false;">
+                        <div class="config-grid">
+                            <div class="config-group">
+                                <h4>Configurações Gerais</h4>
+                                
+                                <div class="form-group">
+                                    <label for="nomeEvento" class="form-label">
+                                        Nome do Evento
+                                    </label>
+                                    <input type="text" 
+                                           id="nomeEvento" 
+                                           class="form-input" 
+                                           placeholder="Ex: Festival de Música 2025">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="limiteRecarga" class="form-label">
+                                        Limite Máximo de Recarga (R$)
+                                    </label>
+                                    <input type="number" 
+                                           id="limiteRecarga" 
+                                           class="form-input" 
+                                           min="10" 
+                                           max="10000" 
+                                           step="10">
+                                </div>
+                            </div>
+
+                            <div class="config-group">
+                                <h4>Configurações de Estoque</h4>
+                                
+                                <div class="form-group">
+                                    <label for="alertaEstoqueBaixo" class="form-label">
+                                        Alerta de Estoque Baixo
+                                    </label>
+                                    <input type="number" 
+                                           id="alertaEstoqueBaixo" 
+                                           class="form-input" 
+                                           min="1" 
+                                           max="100">
+                                    <small class="form-help">
+                                        Quantidade mínima antes do alerta
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-checkbox">
+                                        <input type="checkbox" id="backupAutomatico">
+                                        <label for="backupAutomatico">
+                                            Backup automático diário
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="config-group">
+                                <h4>Configurações de Segurança</h4>
+                                
+                                <div class="form-group">
+                                    <label for="novaSenhaAdmin" class="form-label">
+                                        Nova Senha Administrativa
+                                    </label>
+                                    <input type="password" 
+                                           id="novaSenhaAdmin" 
+                                           class="form-input" 
+                                           placeholder="Deixe em branco para manter atual">
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="form-checkbox">
+                                        <input type="checkbox" id="logDetalhado" checked>
+                                        <label for="logDetalhado">
+                                            Log detalhado de operações
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="config-actions">
+                            <button type="submit" class="btn btn-success btn-lg" onclick="salvarConfiguracoes()">
+                                <i class="fas fa-save"></i>
+                                Salvar Configurações
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Ferramentas de Sistema -->
+                <section class="admin-section danger-zone">
+                    <h3 class="section-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Ferramentas de Sistema - Zona de Perigo
+                    </h3>
+                    
+                    <div class="danger-zone-content">
+                        <div class="danger-warning">
+                            <i class="fas fa-skull-crossbones"></i>
+                            <p>
+                                <strong>ATENÇÃO:</strong> As operações abaixo são irreversíveis e podem causar perda de dados.
+                                Use apenas em casos extremos e com backup completo.
+                            </p>
+                        </div>
+
+                        <div class="danger-actions">
+                            <button class="btn btn-danger" onclick="limparDadosSistema()">
+                                <i class="fas fa-trash-alt"></i>
+                                Limpar Dados do Sistema
+                            </button>
+                            
+                            <button class="btn btn-warning" onclick="resetarSistema()">
+                                <i class="fas fa-redo"></i>
+                                Resetar Sistema Completo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação Crítica -->
+    <div class="modal" id="modalConfirmacaoCritica" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header danger">
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirmação Necessária
+                </h3>
+            </div>
+            <div class="modal-body">
+                <div class="critical-warning">
+                    <i class="fas fa-skull-crossbones"></i>
+                    <p id="textoConfirmacaoCritica">Esta ação é irreversível!</p>
+                </div>
+                
+                <div class="confirmation-input">
+                    <label for="confirmacaoTexto" class="form-label">
+                        Digite "CONFIRMAR" para prosseguir:
+                    </label>
+                    <input type="text" 
+                           id="confirmacaoTexto" 
+                           class="form-input" 
+                           placeholder="CONFIRMAR">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="executarAcaoCritica()" id="btnConfirmarCritico" disabled>
+                    <i class="fas fa-check"></i>
+                    Executar Ação
+                </button>
+                <button class="btn btn-secondary" onclick="fecharModalCritico()">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin loading-icon"></i>
+            <span id="loadingText">Processando operação administrativa...</span>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer">
+        <!-- Toasts dinâmicos -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/cartao.js"></script>
+    <script src="../js/admin.js"></script>
+
+    <!-- Scripts auxiliares da página -->
+    <script>
+        // Variáveis globais
+        let acaoCriticaPendente = null;
+
+        // Função para resetar sistema completo
+        function resetarSistema() {
+            mostrarConfirmacaoCritica(
+                'Esta ação irá APAGAR TODOS OS DADOS e resetar o sistema para o estado inicial. Todos os cartões, transações, produtos e configurações serão perdidos permanentemente.',
+                () => {
+                    try {
+                        // Limpa todos os dados do localStorage
+                        localStorage.removeItem('caixaevent_cartoes');
+                        localStorage.removeItem('caixaevent_historico');
+                        localStorage.removeItem('caixaevent_produtos');
+                        localStorage.removeItem('caixaevent_config_admin');
+                        localStorage.removeItem('caixaevent_log_operacoes');
+                        localStorage.removeItem('caixaevent_consultas_recentes');
+                        localStorage.removeItem('caixaevent_inicio_sistema');
+
+                        // Log da operação crítica
+                        console.log('Sistema resetado completamente pelo administrador');
+
+                        // Recarrega a página para estado inicial
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+
+                        mostrarToast('Sistema resetado com sucesso! Recarregando...', 'success');
+                        
+                    } catch (error) {
+                        console.error('Erro ao resetar sistema:', error);
+                        mostrarToast('Erro ao resetar sistema!', 'error');
+                    }
+                }
+            );
+        }
+
+        // Modal de confirmação crítica
+        function mostrarConfirmacaoCritica(texto, callback) {
+            document.getElementById('textoConfirmacaoCritica').textContent = texto;
+            document.getElementById('confirmacaoTexto').value = '';
+            document.getElementById('btnConfirmarCritico').disabled = true;
+            document.getElementById('modalConfirmacaoCritica').style.display = 'flex';
+            
+            acaoCriticaPendente = callback;
+
+            // Validação em tempo real
+            document.getElementById('confirmacaoTexto').addEventListener('input', function() {
+                const valor = this.value.toUpperCase();
+                const btnConfirmar = document.getElementById('btnConfirmarCritico');
+                btnConfirmar.disabled = valor !== 'CONFIRMAR';
+            });
+        }
+
+        function executarAcaoCritica() {
+            if (acaoCriticaPendente) {
+                acaoCriticaPendente();
+                acaoCriticaPendente = null;
+            }
+            fecharModalCritico();
+        }
+
+        function fecharModalCritico() {
+            document.getElementById('modalConfirmacaoCritica').style.display = 'none';
+            document.getElementById('confirmacaoTexto').value = '';
+            acaoCriticaPendente = null;
+        }
+
+        // Sistema de Toast
+        function mostrarToast(mensagem, tipo = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${tipo}`;
+            
+            const icones = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+
+            toast.innerHTML = `
+                <i class="${icones[tipo] || icones.info}"></i>
+                <span>${mensagem}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+        }
+
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Foca no campo de senha quando carrega
+            setTimeout(() => {
+                const senhaInput = document.getElementById('senhaAdmin');
+                if (senhaInput && senhaInput.offsetParent !== null) {
+                    senhaInput.focus();
+                }
+            }, 100);
+
+            // Configurar enter no campo de senha
+            const senhaInput = document.getElementById('senhaAdmin');
+            if (senhaInput) {
+                senhaInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        realizarLogin();
+                    }
+                });
+            }
+        });
+
+        // Previne saída acidental quando logado
+        window.addEventListener('beforeunload', function(e) {
+            if (paginaAdmin && paginaAdmin.logado) {
+                e.preventDefault();
+                e.returnValue = 'Você tem certeza que deseja sair da área administrativa?';
+            }
+        });
+
+        console.log('Interface administrativa CaixaEvent carregada!');
+    </script>
+
+    <!-- CSS adicional para área administrativa -->
+    <style>
+        .admin-login {
+            background: linear-gradient(135deg, #1E40AF, #1D4ED8);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg);
+        }
+
+        .login-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-2xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            color: var(--primary-blue);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .login-title {
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .login-footer {
+            margin-top: var(--spacing-lg);
+            color: var(--text-gray);
+        }
+
+        .admin-header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+        }
+
+        .admin-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: var(--spacing-xs);
+            color: var(--text-white);
+            font-size: 0.9rem;
+        }
+
+        .admin-user {
+            font-weight: 600;
+        }
+
+        .last-update {
+            opacity: 0.8;
+        }
+
+        .admin-sections {
+            display: grid;
+            gap: var(--spacing-xl);
+        }
+
+        .admin-section {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-gray);
+        }
+
+        .admin-section.danger-zone {
+            border-color: var(--primary-red);
+            background: linear-gradient(135deg, #FEF2F2, #FFFFFF);
+        }
+
+        .section-title {
+            color: var(--text-dark);
+            font-size: 1.25rem;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--bg-gray-100);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .input-group {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .input-group .form-input {
+            flex: 1;
+        }
+
+        .card-correction-info {
+            background: var(--bg-gray-50);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin: var(--spacing-lg) 0;
+        }
+
+        .current-balance-correction {
+            background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+            border: 2px solid var(--primary-green);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .reports-controls {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .report-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .report-section h4 {
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .log-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-header {
+            background: var(--bg-gray-50);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .log-loading {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--text-gray);
+        }
+
+        .backup-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-xl);
+        }
+
+        .backup-section,
+        .restore-section {
+            padding: var(--spacing-lg);
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius-lg);
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--border-gray);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            margin: var(--spacing-md) 0;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-blue);
+            background: var(--bg-gray-50);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .config-group h4 {
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .config-actions {
+            text-align: center;
+        }
+
+        .danger-zone-content {
+            text-align: center;
+        }
+
+        .danger-warning {
+            background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+            border: 2px solid var(--primary-red);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .danger-warning i {
+            font-size: 2rem;
+            color: var(--primary-red);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .danger-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-header.danger {
+            background: linear-gradient(135deg, #FEF2F2, #FEE2E2);
+            color: var(--primary-red);
+        }
+
+        .critical-warning {
+            background: var(--bg-gray-50);
+            border: 2px solid var(--primary-red);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .critical-warning i {
+            font-size: 2rem;
+            color: var(--primary-red);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .confirmation-input {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        @media (max-width: 768px) {
+            .admin-header-actions {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .admin-info {
+                align-items: center;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .backup-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .reports-controls {
+                flex-direction: column;
+            }
+
+            .danger-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</body>
+</html>

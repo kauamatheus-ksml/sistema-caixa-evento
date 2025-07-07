@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<!-- Arquivo: estoque.html - Interface de gerenciamento de estoque -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaixaEvent - Gerenciamento de Estoque</title>
+    <meta name="description" content="Gerenciar produtos, estoque e inventário do evento">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="back-btn" onclick="voltarPagina()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1>Gerenciamento de Estoque</h1>
+        <div class="header-actions">
+            <div class="stock-summary">
+                <div class="summary-item">
+                    <i class="fas fa-box"></i>
+                    <span>Produtos: <strong id="totalProdutosHeader">0</strong></span>
+                </div>
+                <div class="summary-item warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Alertas: <strong id="alertasEstoqueHeader">0</strong></span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Container Principal -->
+    <div class="container">
+        <!-- Dashboard de Estatísticas -->
+        <section class="stock-dashboard">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalProdutos">0</div>
+                        <div class="stat-label">Total de Produtos</div>
+                        <div class="stat-detail">
+                            <span id="produtosAtivos">0</span> ativos
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="produtosEstoqueOk">0</div>
+                        <div class="stat-label">Estoque Adequado</div>
+                        <div class="stat-detail">
+                            Acima do mínimo
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="produtosEstoqueBaixo">0</div>
+                        <div class="stat-label">Estoque Baixo</div>
+                        <div class="stat-detail">
+                            Requer atenção
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card red">
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="produtosSemEstoque">0</div>
+                        <div class="stat-label">Sem Estoque</div>
+                        <div class="stat-detail">
+                            Indisponíveis
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="valorTotalEstoque">R$ 0,00</div>
+                        <div class="stat-label">Valor Total</div>
+                        <div class="stat-detail">
+                            Em estoque
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alertas de Estoque -->
+        <section class="stock-alerts" id="stockAlerts">
+            <h3>
+                <i class="fas fa-bell"></i>
+                Alertas de Estoque
+            </h3>
+            <div class="alerts-container" id="alertasEstoque">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Todos os produtos com estoque adequado</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controles e Filtros -->
+        <section class="stock-controls">
+            <div class="card">
+                <div class="controls-header">
+                    <h3>
+                        <i class="fas fa-filter"></i>
+                        Controles de Estoque
+                    </h3>
+                    <button class="btn btn-primary" onclick="abrirModalProduto()" id="btnAdicionarProduto">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Produto
+                    </button>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="buscaProdutos" class="filter-label">Buscar:</label>
+                        <input type="text" 
+                               id="buscaProdutos" 
+                               class="form-input" 
+                               placeholder="Digite o nome do produto...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filtroCategoria" class="filter-label">Categoria:</label>
+                        <select id="filtroCategoria" class="form-select">
+                            <option value="todos">Todas as categorias</option>
+                            <option value="bebidas">Bebidas</option>
+                            <option value="comidas">Comidas</option>
+                            <option value="snacks">Snacks</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="filtroStatus" class="filter-label">Status:</label>
+                        <select id="filtroStatus" class="form-select">
+                            <option value="">Todos os status</option>
+                            <option value="ativo">Apenas ativos</option>
+                            <option value="inativo">Apenas inativos</option>
+                            <option value="estoque-baixo">Estoque baixo</option>
+                            <option value="sem-estoque">Sem estoque</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <button class="btn btn-outline" onclick="limparFiltros()">
+                            <i class="fas fa-times"></i>
+                            Limpar Filtros
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportarEstoque()">
+                            <i class="fas fa-download"></i>
+                            Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabela de Produtos -->
+        <section class="products-table-section">
+            <div class="card">
+                <div class="table-header">
+                    <h3>
+                        <i class="fas fa-table"></i>
+                        Lista de Produtos
+                    </h3>
+                    <div class="table-info">
+                        <span id="produtosFiltrados">0 produtos encontrados</span>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <button class="sort-btn" onclick="ordenarPor('nome')">
+                                        Produto
+                                        <i class="fas fa-sort"></i>
+                                    </button>
+                                </th>
+                                <th>
+                                    <button class="sort-btn" onclick="ordenarPor('categoria')">
+                                        Categoria
+                                        <i class="fas fa-sort"></i>
+                                    </button>
+                                </th>
+                                <th>
+                                    <button class="sort-btn" onclick="ordenarPor('preco')">
+                                        Preço
+                                        <i class="fas fa-sort"></i>
+                                    </button>
+                                </th>
+                                <th>
+                                    <button class="sort-btn" onclick="ordenarPor('estoque')">
+                                        Estoque
+                                        <i class="fas fa-sort"></i>
+                                    </button>
+                                </th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produtosTableBody">
+                            <tr>
+                                <td colspan="6" class="table-loading">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <span>Carregando produtos...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-pagination" id="tablePagination" style="display: none;">
+                    <div class="pagination-info">
+                        <span>Mostrando <span id="paginaAtual">1-10</span> de <span id="totalRegistros">0</span> produtos</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-sm btn-outline" onclick="paginaAnterior()">
+                            <i class="fas fa-chevron-left"></i>
+                            Anterior
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="proximaPagina()">
+                            Próxima
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ações em Lote -->
+        <section class="bulk-actions" id="bulkActions" style="display: none;">
+            <div class="card">
+                <h4>
+                    <i class="fas fa-tasks"></i>
+                    Ações em Lote
+                    <span class="selected-count" id="selectedCount">0 selecionados</span>
+                </h4>
+                <div class="bulk-controls">
+                    <button class="btn btn-success" onclick="ativarSelecionados()">
+                        <i class="fas fa-eye"></i>
+                        Ativar Selecionados
+                    </button>
+                    <button class="btn btn-warning" onclick="desativarSelecionados()">
+                        <i class="fas fa-eye-slash"></i>
+                        Desativar Selecionados
+                    </button>
+                    <button class="btn btn-danger" onclick="excluirSelecionados()">
+                        <i class="fas fa-trash"></i>
+                        Excluir Selecionados
+                    </button>
+                    <button class="btn btn-outline" onclick="limparSelecao()">
+                        <i class="fas fa-times"></i>
+                        Limpar Seleção
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de Produto -->
+    <div class="modal" id="modalProduto" style="display: none;">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="tituloModal">
+                    <i class="fas fa-plus-circle"></i>
+                    Novo Produto
+                </h3>
+                <button class="modal-close" onclick="fecharModalProduto()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="formProduto" onsubmit="return false;">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="nomeProduto" class="form-label">
+                                Nome do Produto *
+                            </label>
+                            <input type="text" 
+                                   id="nomeProduto" 
+                                   class="form-input" 
+                                   placeholder="Ex: Pizza Margherita"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="categoriaProduto" class="form-label">
+                                Categoria *
+                            </label>
+                            <select id="categoriaProduto" class="form-select" required>
+                                <option value="">Selecione uma categoria</option>
+                                <option value="bebidas">Bebidas</option>
+                                <option value="comidas">Comidas</option>
+                                <option value="snacks">Snacks</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="precoProduto" class="form-label">
+                                Preço (R$) *
+                            </label>
+                            <input type="number" 
+                                   id="precoProduto" 
+                                   class="form-input" 
+                                   placeholder="0,00"
+                                   step="0.01"
+                                   min="0"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estoqueProduto" class="form-label">
+                                Quantidade em Estoque *
+                            </label>
+                            <input type="number" 
+                                   id="estoqueProduto" 
+                                   class="form-input" 
+                                   placeholder="0"
+                                   min="0"
+                                   required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estoqueMinimoProduto" class="form-label">
+                                Estoque Mínimo
+                            </label>
+                            <input type="number" 
+                                   id="estoqueMinimoProduto" 
+                                   class="form-input" 
+                                   placeholder="10"
+                                   min="0">
+                            <small class="form-help">
+                                Quantidade mínima para alerta de estoque baixo
+                            </small>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="descricaoProduto" class="form-label">
+                                Descrição
+                            </label>
+                            <textarea id="descricaoProduto" 
+                                      class="form-input" 
+                                      rows="3"
+                                      placeholder="Descrição detalhada do produto..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-checkbox">
+                                <input type="checkbox" 
+                                       id="ativoProduto" 
+                                       checked>
+                                <label for="ativoProduto">
+                                    Produto ativo (disponível para venda)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="salvarProduto()" id="btnSalvarProduto" disabled>
+                        <i class="fas fa-save"></i>
+                        Salvar Produto
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="fecharModalProduto()" id="btnCancelarProduto">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal" id="modalConfirmacao" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-question-circle"></i>
+                    Confirmar Ação
+                </h3>
+            </div>
+            <div class="modal-body">
+                <p id="textoConfirmacao">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="confirmarAcao()" id="btnConfirmar">
+                    <i class="fas fa-check"></i>
+                    Confirmar
+                </button>
+                <button class="btn btn-secondary" onclick="fecharModalConfirmacao()">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Importação -->
+    <div class="modal" id="modalImportacao" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-upload"></i>
+                    Importar Produtos
+                </h3>
+                <button class="modal-close" onclick="fecharModalImportacao()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h4>Arraste um arquivo JSON aqui</h4>
+                    <p>ou clique para selecionar</p>
+                    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="processarArquivo(this)">
+                </div>
+                
+                <div class="import-preview" id="importPreview" style="display: none;">
+                    <!-- Preview dos produtos será mostrado aqui -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="confirmarImportacao()" id="btnImportar" style="display: none;">
+                    <i class="fas fa-check"></i>
+                    Importar Produtos
+                </button>
+                <button class="btn btn-secondary" onclick="fecharModalImportacao()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin loading-icon"></i>
+            <span id="loadingText">Processando...</span>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer">
+        <!-- Toasts dinâmicos -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/cartao.js"></script>
+    <script src="../js/estoque.js"></script>
+
+    <!-- Funções auxiliares da página -->
+    <script>
+        // Variáveis globais
+        let produtosSelecionados = [];
+        let ordemAtual = { campo: 'nome', direcao: 'asc' };
+        let paginaAtual = 1;
+        let itensPorPagina = 10;
+        let acaoConfirmacao = null;
+
+        // Função para limpar filtros
+        function limparFiltros() {
+            document.getElementById('buscaProdutos').value = '';
+            document.getElementById('filtroCategoria').value = 'todos';
+            document.getElementById('filtroStatus').value = '';
+            
+            if (paginaEstoque) {
+                paginaEstoque.filtroAtivo = 'todos';
+                paginaEstoque.buscaAtiva = '';
+                paginaEstoque.filtroStatus = '';
+                paginaEstoque.renderizarTabela();
+                mostrarToast('Filtros limpos!', 'info');
+            }
+        }
+
+        // Função para exportar estoque
+        function exportarEstoque() {
+            if (paginaEstoque) {
+                const dados = paginaEstoque.exportarEstoque();
+                const dataStr = JSON.stringify(dados, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `estoque_caixaevent_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+
+                mostrarToast('Estoque exportado com sucesso!', 'success');
+            }
+        }
+
+        // Função para ordenar tabela
+        function ordenarPor(campo) {
+            if (ordemAtual.campo === campo) {
+                ordemAtual.direcao = ordemAtual.direcao === 'asc' ? 'desc' : 'asc';
+            } else {
+                ordemAtual.campo = campo;
+                ordemAtual.direcao = 'asc';
+            }
+
+            // Atualiza ícones de ordenação
+            document.querySelectorAll('.sort-btn i').forEach(icon => {
+                icon.className = 'fas fa-sort';
+            });
+
+            const botaoAtual = document.querySelector(`[onclick="ordenarPor('${campo}')"] i`);
+            if (botaoAtual) {
+                botaoAtual.className = `fas fa-sort-${ordemAtual.direcao === 'asc' ? 'up' : 'down'}`;
+            }
+
+            if (paginaEstoque) {
+                paginaEstoque.renderizarTabela();
+            }
+        }
+
+        // Funções de paginação
+        function paginaAnterior() {
+            if (paginaAtual > 1) {
+                paginaAtual--;
+                if (paginaEstoque) paginaEstoque.renderizarTabela();
+            }
+        }
+
+        function proximaPagina() {
+            const totalPaginas = Math.ceil(Object.keys(paginaEstoque?.produtos || {}).length / itensPorPagina);
+            if (paginaAtual < totalPaginas) {
+                paginaAtual++;
+                if (paginaEstoque) paginaEstoque.renderizarTabela();
+            }
+        }
+
+        // Funções de seleção em lote
+        function selecionarProduto(produtoId, checkbox) {
+            if (checkbox.checked) {
+                if (!produtosSelecionados.includes(produtoId)) {
+                    produtosSelecionados.push(produtoId);
+                }
+            } else {
+                const index = produtosSelecionados.indexOf(produtoId);
+                if (index > -1) {
+                    produtosSelecionados.splice(index, 1);
+                }
+            }
+
+            atualizarAcoesLote();
+        }
+
+        function selecionarTodos(checkbox) {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            produtosSelecionados = [];
+
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                if (checkbox.checked) {
+                    produtosSelecionados.push(cb.dataset.produtoId);
+                }
+            });
+
+            atualizarAcoesLote();
+        }
+
+        function atualizarAcoesLote() {
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+
+            if (produtosSelecionados.length > 0) {
+                bulkActions.style.display = 'block';
+                selectedCount.textContent = `${produtosSelecionados.length} selecionado${produtosSelecionados.length !== 1 ? 's' : ''}`;
+            } else {
+                bulkActions.style.display = 'none';
+            }
+        }
+
+        function limparSelecao() {
+            produtosSelecionados = [];
+            document.querySelectorAll('.product-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
+            atualizarAcoesLote();
+            mostrarToast('Seleção limpa!', 'info');
+        }
+
+        function ativarSelecionados() {
+            if (produtosSelecionados.length === 0) return;
+
+            mostrarConfirmacao(
+                `Ativar ${produtosSelecionados.length} produto(s) selecionado(s)?`,
+                () => {
+                    produtosSelecionados.forEach(id => {
+                        if (paginaEstoque && paginaEstoque.produtos[id]) {
+                            paginaEstoque.produtos[id].ativo = true;
+                        }
+                    });
+                    
+                    paginaEstoque.salvarProdutos();
+                    paginaEstoque.renderizarTabela();
+                    paginaEstoque.atualizarEstatisticas();
+                    limparSelecao();
+                    mostrarToast('Produtos ativados com sucesso!', 'success');
+                }
+            );
+        }
+
+        function desativarSelecionados() {
+            if (produtosSelecionados.length === 0) return;
+
+            mostrarConfirmacao(
+                `Desativar ${produtosSelecionados.length} produto(s) selecionado(s)?`,
+                () => {
+                    produtosSelecionados.forEach(id => {
+                        if (paginaEstoque && paginaEstoque.produtos[id]) {
+                            paginaEstoque.produtos[id].ativo = false;
+                        }
+                    });
+                    
+                    paginaEstoque.salvarProdutos();
+                    paginaEstoque.renderizarTabela();
+                    paginaEstoque.atualizarEstatisticas();
+                    limparSelecao();
+                    mostrarToast('Produtos desativados com sucesso!', 'success');
+                }
+            );
+        }
+
+        function excluirSelecionados() {
+            if (produtosSelecionados.length === 0) return;
+
+            mostrarConfirmacao(
+                `ATENÇÃO: Excluir ${produtosSelecionados.length} produto(s) selecionado(s)?\n\nEsta ação não pode ser desfeita!`,
+                () => {
+                    produtosSelecionados.forEach(id => {
+                        if (paginaEstoque && paginaEstoque.produtos[id]) {
+                            delete paginaEstoque.produtos[id];
+                        }
+                    });
+                    
+                    paginaEstoque.salvarProdutos();
+                    paginaEstoque.renderizarTabela();
+                    paginaEstoque.atualizarEstatisticas();
+                    limparSelecao();
+                    mostrarToast('Produtos excluídos com sucesso!', 'success');
+                }
+            );
+        }
+
+        // Modal de confirmação
+        function mostrarConfirmacao(texto, callback) {
+            document.getElementById('textoConfirmacao').textContent = texto;
+            document.getElementById('modalConfirmacao').style.display = 'flex';
+            acaoConfirmacao = callback;
+        }
+
+        function confirmarAcao() {
+            if (acaoConfirmacao) {
+                acaoConfirmacao();
+                acaoConfirmacao = null;
+            }
+            fecharModalConfirmacao();
+        }
+
+        function fecharModalConfirmacao() {
+            document.getElementById('modalConfirmacao').style.display = 'none';
+            acaoConfirmacao = null;
+        }
+
+        // Modal de importação
+        function abrirModalImportacao() {
+            document.getElementById('modalImportacao').style.display = 'flex';
+        }
+
+        function fecharModalImportacao() {
+            document.getElementById('modalImportacao').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('importPreview').style.display = 'none';
+            document.getElementById('btnImportar').style.display = 'none';
+        }
+
+        function processarArquivo(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    mostrarPreviewImportacao(dados);
+                } catch (error) {
+                    mostrarToast('Arquivo JSON inválido!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function mostrarPreviewImportacao(dados) {
+            const preview = document.getElementById('importPreview');
+            const btnImportar = document.getElementById('btnImportar');
+
+            if (dados.produtos && Object.keys(dados.produtos).length > 0) {
+                const totalProdutos = Object.keys(dados.produtos).length;
+                
+                preview.innerHTML = `
+                    <h4>Preview da Importação</h4>
+                    <p><strong>${totalProdutos}</strong> produto(s) encontrado(s) no arquivo.</p>
+                    <div class="preview-list">
+                        ${Object.values(dados.produtos).slice(0, 5).map(produto => `
+                            <div class="preview-item">
+                                <strong>${produto.nome}</strong> - ${produto.categoria} - R$ ${produto.preco.toFixed(2)}
+                            </div>
+                        `).join('')}
+                        ${totalProdutos > 5 ? `<div class="preview-more">... e mais ${totalProdutos - 5} produto(s)</div>` : ''}
+                    </div>
+                `;
+                
+                preview.style.display = 'block';
+                btnImportar.style.display = 'inline-flex';
+                window.dadosImportacao = dados;
+            } else {
+                mostrarToast('Nenhum produto válido encontrado no arquivo!', 'error');
+            }
+        }
+
+        function confirmarImportacao() {
+            if (window.dadosImportacao && paginaEstoque) {
+                const sucesso = paginaEstoque.importarEstoque(window.dadosImportacao);
+                if (sucesso) {
+                    mostrarToast('Produtos importados com sucesso!', 'success');
+                    fecharModalImportacao();
+                } else {
+                    mostrarToast('Erro ao importar produtos!', 'error');
+                }
+            }
+        }
+
+        // Sistema de Toast
+        function mostrarToast(mensagem, tipo = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${tipo}`;
+            
+            const icones = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+
+            toast.innerHTML = `
+                <i class="${icones[tipo] || icones.info}"></i>
+                <span>${mensagem}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+        }
+
+        // Atualização dos headers
+        function atualizarHeaderStats() {
+            if (!paginaEstoque) return;
+
+            const stats = paginaEstoque.obterEstatisticasCompletas();
+            const alertas = stats.alertasEstoque.semEstoque + stats.alertasEstoque.estoqueBaixo;
+
+            document.getElementById('totalProdutosHeader').textContent = stats.totalProdutos;
+            document.getElementById('alertasEstoqueHeader').textContent = alertas;
+
+            // Atualiza classe de aviso
+            const alertasElement = document.querySelector('.summary-item.warning');
+            if (alertas > 0) {
+                alertasElement.classList.add('active');
+            } else {
+                alertasElement.classList.remove('active');
+            }
+        }
+
+        // Atualização periódica
+        setInterval(atualizarHeaderStats, 30000);
+
+        // Inicialização quando DOM carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(atualizarHeaderStats, 1000);
+        });
+
+        console.log('Interface de estoque CaixaEvent carregada!');
+    </script>
+</body>
+</html>
