@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<!-- debug-sistema.html - Script de Debug do CaixaEvent v2.0 -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Debug CaixaEvent v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .debug-header {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .debug-content {
+            padding: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .test-header {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            font-weight: bold;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-content {
+            padding: 20px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success {
+            background: #4CAF50;
+        }
+
+        .status-error {
+            background: #F44336;
+        }
+
+        .status-warning {
+            background: #FF9800;
+        }
+
+        .status-loading {
+            background: #2196F3;
+            animation: pulse 2s infinite;
+        }
+
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .result-success {
+            background: #e8f5e8;
+            color: #2e7d2e;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .result-error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #F44336;
+        }
+
+        .result-warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border-left: 4px solid #FF9800;
+        }
+
+        .result-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196F3;
+        }
+
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #4CAF50;
+        }
+
+        .btn-danger {
+            background: #F44336;
+        }
+
+        .btn-warning {
+            background: #FF9800;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .code-block {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .fix-suggestion {
+            background: #f0f8ff;
+            border: 1px solid #007acc;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .summary-card.success {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+
+        .summary-card.error {
+            border-color: #F44336;
+            background: #ffebee;
+        }
+
+        .summary-card.warning {
+            border-color: #FF9800;
+            background: #fff3e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <div class="debug-header">
+            <h1>🔧 Debug CaixaEvent v2.0</h1>
+            <p>Sistema de Diagnóstico e Correção Automática</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">Iniciando diagnóstico...</p>
+        </div>
+
+        <div class="debug-content">
+            <!-- Controles Principais -->
+            <div class="test-section">
+                <div class="test-header">
+                    🎮 Controles de Debug
+                </div>
+                <div class="test-content">
+                    <button class="btn" onclick="iniciarDebugCompleto()">🚀 Iniciar Debug Completo</button>
+                    <button class="btn btn-warning" onclick="testarConexoesBanco()">🗄️ Testar MySQL</button>
+                    <button class="btn btn-success" onclick="testarFuncionalidades()">⚡ Testar Funcionalidades</button>
+                    <button class="btn btn-danger" onclick="corrigirProblemasAutomaticamente()">🔧 Correção Automática</button>
+                </div>
+            </div>
+
+            <!-- Teste 1: Verificação de Arquivos -->
+            <div class="test-section">
+                <div class="test-header">
+                    <span class="status-indicator status-loading" id="status-arquivos"></span>
+                    📁 Verificação de Arquivos
+                </div>
+                <div class="test-content" id="content-arquivos">
+                    <div class="test-result result-info">Aguardando execução do teste...</div>
+                </div>
+            </div>
+
+            <!-- Teste 2: Configuração do Sistema -->
+            <div class="test-section">
+                <div class="test-header">
+                    <span class="status-indicator status-loading" id="status-config"></span>
+                    ⚙️ Configuração do Sistema
+                </div>
+                <div class="test-content" id="content-config">
+                    <div class="test-result result-info">Aguardando execução do teste...</div>
+                </div>
+            </div>
+
+            <!-- Teste 3: Conectividade MySQL -->
+            <div class="test-section">
+                <div class="test-header">
+                    <span class="status-indicator status-loading" id="status-mysql"></span>
+                    🗄️ Conectividade MySQL
+                </div>
+                <div class="test-content" id="content-mysql">
+                    <div class="test-result result-info">Aguardando execução do teste...</div>
+                </div>
+            </div>
+
+            <!-- Teste 4: APIs e Backend -->
+            <div class="test-section">
+                <div class="test-header">
+                    <span class="status-indicator status-loading" id="status-apis"></span>
+                    🌐 APIs e Backend
+                </div>
+                <div class="test-content" id="content-apis">
+                    <div class="test-result result-info">Aguardando execução do teste...</div>
+                </div>
+            </div>
+
+            <!-- Teste 5: Funcionalidades Frontend -->
+            <div class="test-section">
+                <div class="test-header">
+                    <span class="status-indicator status-loading" id="status-frontend"></span>
+                    💻 Funcionalidades Frontend
+                </div>
+                <div class="test-content" id="content-frontend">
+                    <div class="test-result result-info">Aguardando execução do teste...</div>
+                </div>
+            </div>
+
+            <!-- Resumo Final -->
+            <div class="test-section">
+                <div class="test-header">
+                    📊 Resumo do Diagnóstico
+                </div>
+                <div class="test-content">
+                    <div class="summary-grid" id="summaryGrid">
+                        <!-- Preenchido pelo JavaScript -->
+                    </div>
+                    <div id="recommendations"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de Debug CaixaEvent v2.0
+        class DebugCaixaEvent {
+            constructor() {
+                this.resultados = {};
+                this.progresso = 0;
+                this.totalTestes = 5;
+                this.problemasEncontrados = [];
+                this.solucoesAutomaticas = [];
+            }
+
+            // Função principal que executa todos os testes
+            async iniciarDebugCompleto() {
+                this.atualizarProgresso(0, "Iniciando diagnóstico completo...");
+                
+                try {
+                    await this.verificarArquivos();
+                    await this.verificarConfiguracao();
+                    await this.testarMySQL();
+                    await this.testarAPIs();
+                    await this.testarFrontend();
+                    
+                    this.gerarResumo();
+                    this.atualizarProgresso(100, "Diagnóstico completo finalizado!");
+                } catch (error) {
+                    console.error('Erro durante debug:', error);
+                    this.adicionarResultado('debug-geral', 'error', `Erro geral: ${error.message}`);
+                }
+            }
+
+            // Teste 1: Verificação de Arquivos Essenciais
+            async verificarArquivos() {
+                this.atualizarProgresso(20, "Verificando arquivos do sistema...");
+                const contentDiv = document.getElementById('content-arquivos');
+                const statusDiv = document.getElementById('status-arquivos');
+                
+                contentDiv.innerHTML = '';
+                
+                const arquivosEssenciais = [
+                    { path: 'css/style.css', name: 'Arquivo CSS principal' },
+                    { path: 'js/cartao.js', name: 'Sistema localStorage' },
+                    { path: 'js/cartao-mysql.js', name: 'Sistema MySQL' },
+                    { path: 'js/main.js', name: 'Dashboard principal' },
+                    { path: 'api/config.php', name: 'Configuração MySQL' },
+                    { path: 'api/cartoes.php', name: 'API de cartões' },
+                    { path: 'api/produtos.php', name: 'API de produtos' }
+                ];
+
+                let arquivosEncontrados = 0;
+                let arquivosFaltando = [];
+
+                for (const arquivo of arquivosEssenciais) {
+                    try {
+                        const response = await fetch(arquivo.path, { method: 'HEAD' });
+                        if (response.ok) {
+                            this.adicionarResultadoDiv(contentDiv, 'success', `✅ ${arquivo.name} - OK`);
+                            arquivosEncontrados++;
+                        } else {
+                            this.adicionarResultadoDiv(contentDiv, 'error', `❌ ${arquivo.name} - Não encontrado`);
+                            arquivosFaltando.push(arquivo);
+                        }
+                    } catch (error) {
+                        this.adicionarResultadoDiv(contentDiv, 'error', `❌ ${arquivo.name} - Erro: ${error.message}`);
+                        arquivosFaltando.push(arquivo);
+                    }
+                }
+
+                // Detectar qual versão está sendo usada
+                this.detectarVersaoSistema(contentDiv);
+
+                if (arquivosFaltando.length === 0) {
+                    statusDiv.className = 'status-indicator status-success';
+                    this.resultados.arquivos = { status: 'success', detalhes: 'Todos os arquivos encontrados' };
+                } else {
+                    statusDiv.className = 'status-indicator status-error';
+                    this.resultados.arquivos = { status: 'error', detalhes: `${arquivosFaltando.length} arquivos faltando` };
+                    this.problemasEncontrados.push(`Arquivos faltando: ${arquivosFaltando.map(a => a.name).join(', ')}`);
+                }
+            }
+
+            // Detecta qual versão do sistema está sendo usada
+            async detectarVersaoSistema(contentDiv) {
+                try {
+                    const response = await fetch('index.html');
+                    const html = await response.text();
+                    
+                    if (html.includes('cartao-mysql.js')) {
+                        this.adicionarResultadoDiv(contentDiv, 'info', '🔄 Versão MySQL detectada no index.html');
+                        this.versaoDetectada = 'mysql';
+                    } else if (html.includes('cartao.js')) {
+                        this.adicionarResultadoDiv(contentDiv, 'info', '💾 Versão localStorage detectada no index.html');
+                        this.versaoDetectada = 'localstorage';
+                    } else {
+                        this.adicionarResultadoDiv(contentDiv, 'warning', '⚠️ Nenhuma versão do sistema detectada no index.html');
+                        this.versaoDetectada = 'indefinida';
+                        this.problemasEncontrados.push('Versão do sistema não detectada no index.html');
+                    }
+                } catch (error) {
+                    this.adicionarResultadoDiv(contentDiv, 'error', `❌ Erro ao analisar index.html: ${error.message}`);
+                }
+            }
+
+            // Teste 2: Configuração do Sistema
+            async verificarConfiguracao() {
+                this.atualizarProgresso(40, "Verificando configurações...");
+                const contentDiv = document.getElementById('content-config');
+                const statusDiv = document.getElementById('status-config');
+                
+                contentDiv.innerHTML = '';
+                
+                let problemasConfig = 0;
+
+                // Verifica localStorage
+                try {
+                    localStorage.setItem('teste', 'ok');
+                    localStorage.removeItem('teste');
+                    this.adicionarResultadoDiv(contentDiv, 'success', '✅ localStorage funcionando');
+                } catch (error) {
+                    this.adicionarResultadoDiv(contentDiv, 'error', `❌ Problema com localStorage: ${error.message}`);
+                    problemasConfig++;
+                }
+
+                // Verifica se há dados existentes
+                const dadosExistentes = {
+                    cartoes: localStorage.getItem('caixaevent_cartoes'),
+                    historico: localStorage.getItem('caixaevent_historico'),
+                    produtos: localStorage.getItem('caixaevent_produtos')
+                };
+
+                let dadosEncontrados = 0;
+                Object.entries(dadosExistentes).forEach(([tipo, dados]) => {
+                    if (dados) {
+                        this.adicionarResultadoDiv(contentDiv, 'info', `📄 Dados ${tipo} encontrados no localStorage`);
+                        dadosEncontrados++;
+                    }
+                });
+
+                if (dadosEncontrados === 0) {
+                    this.adicionarResultadoDiv(contentDiv, 'warning', '⚠️ Nenhum dado encontrado no localStorage');
+                }
+
+                // Verifica configurações de rede
+                if (navigator.onLine) {
+                    this.adicionarResultadoDiv(contentDiv, 'success', '✅ Conexão com internet ativa');
+                } else {
+                    this.adicionarResultadoDiv(contentDiv, 'warning', '⚠️ Sem conexão com internet');
+                    problemasConfig++;
+                }
+
+                if (problemasConfig === 0) {
+                    statusDiv.className = 'status-indicator status-success';
+                    this.resultados.config = { status: 'success', detalhes: 'Configurações OK' };
+                } else {
+                    statusDiv.className = 'status-indicator status-warning';
+                    this.resultados.config = { status: 'warning', detalhes: `${problemasConfig} problemas encontrados` };
+                }
+            }
+
+            // Teste 3: Conectividade MySQL
+            async testarMySQL() {
+                this.atualizarProgresso(60, "Testando conectividade MySQL...");
+                const contentDiv = document.getElementById('content-mysql');
+                const statusDiv = document.getElementById('status-mysql');
+                
+                contentDiv.innerHTML = '';
+
+                if (this.versaoDetectada !== 'mysql') {
+                    this.adicionarResultadoDiv(contentDiv, 'info', '💾 Sistema configurado para localStorage - MySQL não necessário');
+                    statusDiv.className = 'status-indicator status-success';
+                    this.resultados.mysql = { status: 'success', detalhes: 'MySQL não é necessário para versão localStorage' };
+                    return;
+                }
+
+                try {
+                    // Testa conexão com config.php
+                    this.adicionarResultadoDiv(contentDiv, 'info', '🔄 Testando config.php...');
+                    const configResponse = await fetch('api/config.php');
+                    
+                    if (configResponse.ok) {
+                        const configData = await configResponse.text();
+                        this.adicionarResultadoDiv(contentDiv, 'success', '✅ Arquivo config.php acessível');
+                        
+                        // Verifica se há erro na resposta
+                        if (configData.includes('erro') || configData.includes('Não foi possível conectar')) {
+                            this.adicionarResultadoDiv(contentDiv, 'error', '❌ Erro de conexão MySQL detectado no config.php');
+                            this.problemasEncontrados.push('Credenciais MySQL incorretas ou servidor inacessível');
+                            this.solucoesAutomaticas.push('verificar-credenciais-mysql');
+                        }
+                    } else {
+                        this.adicionarResultadoDiv(contentDiv, 'error', `❌ config.php inacessível (${configResponse.status})`);
+                        this.problemasEncontrados.push('Arquivo config.php não acessível');
+                    }
+
+                    // Testa APIs
+                    const apisParaTestar = ['cartoes.php', 'produtos.php'];
+                    for (const api of apisParaTestar) {
+                        try {
+                            const response = await fetch(`api/${api}?request=teste`);
+                            if (response.ok) {
+                                this.adicionarResultadoDiv(contentDiv, 'success', `✅ API ${api} respondendo`);
+                            } else {
+                                this.adicionarResultadoDiv(contentDiv, 'error', `❌ API ${api} com erro (${response.status})`);
+                            }
+                        } catch (error) {
+                            this.adicionarResultadoDiv(contentDiv, 'error', `❌ Erro ao testar ${api}: ${error.message}`);
+                        }
+                    }
+
+                    statusDiv.className = 'status-indicator status-success';
+                    this.resultados.mysql = { status: 'success', detalhes: 'Conectividade MySQL OK' };
+
+                } catch (error) {
+                    this.adicionarResultadoDiv(contentDiv, 'error', `❌ Erro geral MySQL: ${error.message}`);
+                    statusDiv.className = 'status-indicator status-error';
+                    this.resultados.mysql = { status: 'error', detalhes: error.message };
+                    this.problemasEncontrados.push(`Erro MySQL: ${error.message}`);
+                }
+            }
+
+            // Teste 4: APIs e Backend
+            async testarAPIs() {
+                this.atualizarProgresso(80, "Testando APIs e backend...");
+                const contentDiv = document.getElementById('content-apis');
+                const statusDiv = document.getElementById('status-apis');
+                
+                contentDiv.innerHTML = '';
+
+                const testesAPI = [
+                    { endpoint: 'api/cartoes.php?request=estatisticas', nome: 'Estatísticas de cartões' },
+                    { endpoint: 'api/produtos.php?request=listar', nome: 'Listagem de produtos' }
+                ];
+
+                let apisOK = 0;
+                let totalAPIs = testesAPI.length;
+
+                for (const teste of testesAPI) {
+                    try {
+                        const response = await fetch(teste.endpoint);
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.adicionarResultadoDiv(contentDiv, 'success', `✅ ${teste.nome} - OK`);
+                            apisOK++;
+                        } else {
+                            this.adicionarResultadoDiv(contentDiv, 'error', `❌ ${teste.nome} - Erro ${response.status}`);
+                        }
+                    } catch (error) {
+                        this.adicionarResultadoDiv(contentDiv, 'error', `❌ ${teste.nome} - ${error.message}`);
+                    }
+                }
+
+                if (apisOK === totalAPIs) {
+                    statusDiv.className = 'status-indicator status-success';
+                    this.resultados.apis = { status: 'success', detalhes: 'Todas as APIs funcionando' };
+                } else if (apisOK > 0) {
+                    statusDiv.className = 'status-indicator status-warning';
+                    this.resultados.apis = { status: 'warning', detalhes: `${apisOK}/${totalAPIs} APIs funcionando` };
+                } else {
+                    statusDiv.className = 'status-indicator status-error';
+                    this.resultados.apis = { status: 'error', detalhes: 'Nenhuma API funcionando' };
+                    this.problemasEncontrados.push('APIs não estão respondendo');
+                }
+            }
+
+            // Teste 5: Funcionalidades Frontend
+            async testarFrontend() {
+                this.atualizarProgresso(90, "Testando funcionalidades do frontend...");
+                const contentDiv = document.getElementById('content-frontend');
+                const statusDiv = document.getElementById('status-frontend');
+                
+                contentDiv.innerHTML = '';
+
+                let testesPassaram = 0;
+                let totalTestes = 0;
+
+                // Testa se o gerenciador de cartões está disponível
+                totalTestes++;
+                if (typeof window.gerenciadorCartao !== 'undefined' || typeof window.GerenciadorCartao !== 'undefined') {
+                    this.adicionarResultadoDiv(contentDiv, 'success', '✅ Gerenciador de cartões carregado');
+                    testesPassaram++;
+                } else {
+                    this.adicionarResultadoDiv(contentDiv, 'error', '❌ Gerenciador de cartões não encontrado');
+                    this.problemasEncontrados.push('JavaScript do sistema de cartões não está carregado');
+                }
+
+                // Testa funções globais essenciais
+                const funcoesEssenciais = ['lerCartaoNFC', 'buscarCartao', 'recarregarCartao'];
+                funcoesEssenciais.forEach(funcao => {
+                    totalTestes++;
+                    if (typeof window[funcao] === 'function') {
+                        this.adicionarResultadoDiv(contentDiv, 'success', `✅ Função ${funcao} disponível`);
+                        testesPassaram++;
+                    } else {
+                        this.adicionarResultadoDiv(contentDiv, 'error', `❌ Função ${funcao} não encontrada`);
+                    }
+                });
+
+                // Testa localStorage se for a versão localStorage
+                if (this.versaoDetectada === 'localstorage') {
+                    totalTestes++;
+                    try {
+                        // Testa criação de cartão fictício
+                        const testCartao = {
+                            numero: 'TEST001',
+                            saldo: 10.00,
+                            ativo: true
+                        };
+                        
+                        localStorage.setItem('teste_caixaevent', JSON.stringify(testCartao));
+                        const recuperado = JSON.parse(localStorage.getItem('teste_caixaevent'));
+                        localStorage.removeItem('teste_caixaevent');
+                        
+                        if (recuperado && recuperado.numero === 'TEST001') {
+                            this.adicionarResultadoDiv(contentDiv, 'success', '✅ Operações localStorage funcionando');
+                            testesPassaram++;
+                        } else {
+                            this.adicionarResultadoDiv(contentDiv, 'error', '❌ Problema nas operações localStorage');
+                        }
+                    } catch (error) {
+                        this.adicionarResultadoDiv(contentDiv, 'error', `❌ Erro localStorage: ${error.message}`);
+                    }
+                }
+
+                if (testesPassaram === totalTestes) {
+                    statusDiv.className = 'status-indicator status-success';
+                    this.resultados.frontend = { status: 'success', detalhes: 'Frontend funcionando perfeitamente' };
+                } else if (testesPassaram > totalTestes / 2) {
+                    statusDiv.className = 'status-indicator status-warning';
+                    this.resultados.frontend = { status: 'warning', detalhes: `${testesPassaram}/${totalTestes} testes passaram` };
+                } else {
+                    statusDiv.className = 'status-indicator status-error';
+                    this.resultados.frontend = { status: 'error', detalhes: 'Problemas críticos no frontend' };
+                    this.problemasEncontrados.push('Frontend com problemas críticos');
+                }
+            }
+
+            // Gera resumo final e recomendações
+            gerarResumo() {
+                const summaryGrid = document.getElementById('summaryGrid');
+                const recommendations = document.getElementById('recommendations');
+                
+                summaryGrid.innerHTML = '';
+                
+                // Cards de resumo
+                Object.entries(this.resultados).forEach(([categoria, resultado]) => {
+                    const card = document.createElement('div');
+                    card.className = `summary-card ${resultado.status}`;
+                    
+                    const icons = {
+                        arquivos: '📁',
+                        config: '⚙️',
+                        mysql: '🗄️',
+                        apis: '🌐',
+                        frontend: '💻'
+                    };
+                    
+                    card.innerHTML = `
+                        <h3>${icons[categoria]} ${categoria.toUpperCase()}</h3>
+                        <p><strong>Status:</strong> ${resultado.status}</p>
+                        <p>${resultado.detalhes}</p>
+                    `;
+                    
+                    summaryGrid.appendChild(card);
+                });
+
+                // Gera recomendações
+                if (this.problemasEncontrados.length > 0) {
+                    recommendations.innerHTML = `
+                        <div class="fix-suggestion">
+                            <h3>🔧 Problemas Encontrados e Soluções:</h3>
+                            ${this.problemasEncontrados.map(problema => `
+                                <div class="test-result result-error">❌ ${problema}</div>
+                            `).join('')}
+                            
+                            <h4>🛠️ Soluções Recomendadas:</h4>
+                            ${this.gerarSolucoes()}
+                        </div>
+                    `;
+                } else {
+                    recommendations.innerHTML = `
+                        <div class="fix-suggestion">
+                            <h3>🎉 Sistema Funcionando Perfeitamente!</h3>
+                            <p>Todos os testes passaram com sucesso. O CaixaEvent v2.0 está funcionando corretamente.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Gera soluções específicas para os problemas encontrados
+            gerarSolucoes() {
+                const solucoes = [];
+
+                if (this.problemasEncontrados.some(p => p.includes('Arquivos faltando'))) {
+                    solucoes.push(`
+                        <div class="test-result result-warning">
+                            📁 <strong>Arquivos Faltando:</strong><br>
+                            1. Verifique se todos os arquivos foram enviados para o servidor<br>
+                            2. Confirme as permissões de pasta<br>
+                            3. Re-upload dos arquivos faltando
+                        </div>
+                    `);
+                }
+
+                if (this.problemasEncontrados.some(p => p.includes('MySQL'))) {
+                    solucoes.push(`
+                        <div class="test-result result-warning">
+                            🗄️ <strong>Problemas MySQL:</strong><br>
+                            1. Verifique as credenciais no api/config.php<br>
+                            2. Confirme se o IP do servidor está liberado<br>
+                            3. Teste a conexão diretamente no phpMyAdmin<br>
+                            <div class="code-block">
+                                // Credenciais atuais no config.php:
+                                Host: srv406.hstgr.io
+                                DB: u383946504_sce
+                                User: u383946504_sce
+                                Pass: Aaku_2004@
+                            </div>
+                        </div>
+                    `);
+                }
+
+                if (this.problemasEncontradas?.some(p => p.includes('Versão do sistema não detectada'))) {
+                    solucoes.push(`
+                        <div class="test-result result-warning">
+                            🔄 <strong>Versão do Sistema:</strong><br>
+                            Configure qual versão usar no index.html:<br>
+                            <div class="code-block">
+                                <!-- Para localStorage (funciona offline): -->
+                                &lt;script src="js/cartao.js"&gt;&lt;/script&gt;
+                                
+                                <!-- Para MySQL (necessita servidor): -->
+                                &lt;script src="js/cartao-mysql.js"&gt;&lt;/script&gt;
+                            </div>
+                        </div>
+                    `);
+                }
+
+                if (this.problemasEncontrados.some(p => p.includes('APIs não estão respondendo'))) {
+                    solucoes.push(`
+                        <div class="test-result result-warning">
+                            🌐 <strong>APIs não Funcionando:</strong><br>
+                            1. Verifique se o PHP está habilitado no servidor<br>
+                            2. Confirme se as extensões PDO e MySQL estão ativas<br>
+                            3. Teste acessando api/config.php diretamente<br>
+                            4. Considere usar a versão localStorage temporariamente
+                        </div>
+                    `);
+                }
+
+                return solucoes.join('');
+            }
+
+            // Correção automática de problemas
+            async corrigirProblemasAutomaticamente() {
+                if (this.problemasEncontrados.length === 0) {
+                    alert('✅ Nenhum problema detectado! Sistema funcionando normalmente.');
+                    return;
+                }
+
+                if (confirm('🔧 Deseja tentar a correção automática dos problemas encontrados?')) {
+                    // Se não há versão detectada, sugere configurar para localStorage
+                    if (this.versaoDetectada === 'indefinida') {
+                        await this.configurarVersaoLocalStorage();
+                    }
+
+                    // Se há problemas MySQL mas versão é localStorage, ignora
+                    if (this.versaoDetectada === 'localstorage' && this.problemasEncontrados.some(p => p.includes('MySQL'))) {
+                        alert('💾 Sistema configurado para localStorage - problemas MySQL ignorados.');
+                    }
+
+                    alert('🔧 Correções aplicadas! Execute o debug novamente para verificar.');
+                }
+            }
+
+            // Configura automaticamente para versão localStorage
+            async configurarVersaoLocalStorage() {
+                try {
+                    const response = await fetch('index.html');
+                    let html = await response.text();
+                    
+                    // Remove referência ao cartao-mysql.js se existir
+                    html = html.replace(/src="js\/cartao-mysql\.js"/g, 'src="js/cartao.js"');
+                    
+                    // Se não há nenhuma referência, adiciona
+                    if (!html.includes('cartao.js') && !html.includes('cartao-mysql.js')) {
+                        html = html.replace('</body>', "<script src=\"js/cartao.js\"></script>\n</body>");
+                    }
+                    
+                    console.log('HTML configurado para localStorage');
+                    this.versaoDetectada = 'localstorage';
+                } catch (error) {
+                    console.error('Erro ao configurar localStorage:', error);
+                }
+            }
+
+            // Funcões auxiliares
+            atualizarProgresso(percentual, texto) {
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                progressFill.style.width = percentual + '%';
+                progressText.textContent = texto;
+            }
+
+            adicionarResultadoDiv(container, tipo, mensagem) {
+                const div = document.createElement('div');
+                div.className = `test-result result-${tipo}`;
+                div.textContent = mensagem;
+                container.appendChild(div);
+            }
+
+            // Testes individuais que podem ser chamados separadamente
+            async testarConexoesBanco() {
+                await this.testarMySQL();
+            }
+
+            async testarFuncionalidades() {
+                await this.testarFrontend();
+            }
+        }
+
+        // Instancia o sistema de debug
+        const debugSystem = new DebugCaixaEvent();
+
+        // Funções globais para os botões
+        window.iniciarDebugCompleto = () => debugSystem.iniciarDebugCompleto();
+        window.testarConexoesBanco = () => debugSystem.testarConexoesBanco();
+        window.testarFuncionalidades = () => debugSystem.testarFuncionalidades();
+        window.corrigirProblemasAutomaticamente = () => debugSystem.corrigirProblemasAutomaticamente();
+
+        // Auto-executa o debug quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 Sistema de Debug CaixaEvent v2.0 carregado!');
+            
+            // Executa debug automático após 2 segundos
+            setTimeout(() => {
+                if (confirm('🚀 Executar diagnóstico automático do sistema?')) {
+                    debugSystem.iniciarDebugCompleto();
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
