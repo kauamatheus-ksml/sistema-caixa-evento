@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<!-- Arquivo: recarga.html - Interface de recarga de saldo -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaixaEvent - Recarga de Saldo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="header">
+        <button class="back-btn" onclick="voltarPagina()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1>Recarga de Saldo</h1>
+    </header>
+    
+    <div class="container">
+        <!-- Card de Identificação do Cartão -->
+        <div class="card">
+            <h3>Identificar Cartão</h3>
+            
+            <!-- Área NFC -->
+            <div class="nfc-area" onclick="lerCartaoNFC()">
+                <i class="fas fa-wifi nfc-icon"></i>
+            </div>
+            
+            <div class="nfc-status">
+                <i class="fas fa-wifi"></i>
+                <span>Toque na área acima para simular NFC</span>
+            </div>
+            
+            <!-- Input Manual -->
+            <input type="text" 
+                   class="card-input" 
+                   id="numeroCartao"
+                   placeholder="Ou digite o número do cartão..." 
+                   maxlength="16">
+            
+            <button class="manual-btn" onclick="lerCartaoManual()">
+                <i class="fas fa-keyboard"></i> Usar Número Manual
+            </button>
+            
+            <!-- Saldo Atual (aparece após leitura) -->
+            <div class="current-balance" id="saldoAtual">
+                <div class="balance-label">Saldo Atual</div>
+                <div class="balance-value" id="valorSaldo">R$ 0,00</div>
+                <div class="card-info" id="infoCartao">Cartão ****</div>
+            </div>
+        </div>
+        
+        <!-- Card de Recarga -->
+        <div class="card">
+            <h3>Valor da Recarga</h3>
+            
+            <!-- Botões de Valores Predefinidos -->
+            <div class="amount-buttons">
+                <button class="amount-btn" onclick="selecionarValor(10)">R$ 10,00</button>
+                <button class="amount-btn" onclick="selecionarValor(20)">R$ 20,00</button>
+                <button class="amount-btn" onclick="selecionarValor(50)">R$ 50,00</button>
+                <button class="amount-btn" onclick="selecionarValor(100)">R$ 100,00</button>
+            </div>
+            
+            <!-- Input para Valor Personalizado -->
+            <input type="number" 
+                   class="custom-amount" 
+                   id="valorPersonalizado"
+                   placeholder="Ou digite um valor personalizado"
+                   min="1" 
+                   max="1000"
+                   step="0.01">
+            
+            <!-- Botão de Recarga -->
+            <button class="recharge-btn" onclick="realizarRecarga()" id="btnRecarregar">
+                <i class="fas fa-plus"></i> RECARREGAR SALDO
+            </button>
+        </div>
+        
+        <!-- Card do Histórico -->
+        <div class="card">
+            <h3>Últimas Recargas</h3>
+            <div class="history-container" id="historicoRecargas">
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-card">Cartão **** 1234</div>
+                        <div class="history-date">Hoje, 14:30</div>
+                    </div>
+                    <div class="history-amount">+ R$ 50,00</div>
+                </div>
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-card">Cartão **** 5678</div>
+                        <div class="history-date">Hoje, 14:15</div>
+                    </div>
+                    <div class="history-amount">+ R$ 25,00</div>
+                </div>
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-card">Cartão **** 9012</div>
+                        <div class="history-date">Hoje, 13:45</div>
+                    </div>
+                    <div class="history-amount">+ R$ 100,00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal" id="modalConfirmacao">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Recarga Realizada</h3>
+                <i class="fas fa-check-circle success-icon"></i>
+            </div>
+            <div class="modal-body">
+                <p>Recarga de <strong id="valorRecarga">R$ 0,00</strong> realizada com sucesso!</p>
+                <p>Cartão: <strong id="cartaoRecarga">****</strong></p>
+                <p>Novo saldo: <strong id="novoSaldo">R$ 0,00</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" onclick="fecharModal()">OK</button>
+                <button class="modal-btn secondary" onclick="novaRecarga()">Nova Recarga</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/cartao.js"></script>
+    <script src="../js/recarga.js"></script>
+</body>
+</html>
