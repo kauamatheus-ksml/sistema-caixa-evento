@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<!-- Arquivo: consulta.html - Interface de consulta de saldo -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaixaEvent - Consulta de Saldo</title>
+    <meta name="description" content="Consulte saldo e histórico de cartões NFC">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="back-btn" onclick="voltarPagina()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1>Consulta de Saldo</h1>
+        <div class="header-actions">
+            <div class="consultas-counter">
+                <i class="fas fa-search"></i>
+                <span>Consultas hoje: <strong id="consultasContador">0</strong></span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Container Principal -->
+    <div class="container">
+        <!-- Seção de Identificação do Cartão -->
+        <section class="card-identification">
+            <div class="card">
+                <h3>
+                    <i class="fas fa-credit-card"></i>
+                    Identificar Cartão para Consulta
+                </h3>
+                
+                <!-- Área NFC Principal -->
+                <div class="nfc-area large" onclick="lerCartaoNFC()">
+                    <div class="nfc-animation">
+                        <i class="fas fa-wifi nfc-icon"></i>
+                        <div class="nfc-waves">
+                            <div class="wave wave-1"></div>
+                            <div class="wave wave-2"></div>
+                            <div class="wave wave-3"></div>
+                        </div>
+                    </div>
+                    <div class="nfc-content">
+                        <h4>Aproxime o Cartão</h4>
+                        <p>Toque na área acima para simular leitura NFC</p>
+                    </div>
+                </div>
+                
+                <div class="nfc-status" id="statusNFC">
+                    <i class="fas fa-wifi"></i>
+                    <span>Aguardando aproximação do cartão...</span>
+                </div>
+                
+                <!-- Divider -->
+                <div class="divider">
+                    <span>OU</span>
+                </div>
+                
+                <!-- Input Manual -->
+                <div class="manual-input-section">
+                    <label for="numeroCartao" class="form-label">
+                        <i class="fas fa-keyboard"></i>
+                        Digite o número do cartão
+                    </label>
+                    <div class="input-group">
+                        <input type="text" 
+                               class="card-input" 
+                               id="numeroCartao"
+                               placeholder="0000 0000 0000 0000" 
+                               maxlength="19">
+                        <button class="btn btn-primary" onclick="lerCartaoManual()">
+                            <i class="fas fa-search"></i>
+                            Consultar
+                        </button>
+                    </div>
+                    <small class="input-help">Digite os 16 dígitos do cartão</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Resultados da Consulta -->
+        <section class="consultation-results" id="consultationResults" style="display: none;">
+            <!-- Informações do Cartão -->
+            <div class="card highlight">
+                <h3>
+                    <i class="fas fa-info-circle"></i>
+                    Informações do Cartão
+                </h3>
+                
+                <div class="card-info-grid">
+                    <div class="info-card saldo-principal">
+                        <div class="info-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Saldo Atual</div>
+                            <div class="info-value large" id="saldoAtual">R$ 0,00</div>
+                            <div class="info-detail" id="ultimaAtualizacao">Atualizado agora</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Número do Cartão</div>
+                            <div class="info-value" id="numeroCartaoExibicao">**** **** **** ****</div>
+                            <div class="info-detail" id="statusCartao">Status: Ativo</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Total Recarregado</div>
+                            <div class="info-value positive" id="totalRecarregado">R$ 0,00</div>
+                            <div class="info-detail" id="recargas">0 recargas</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Total Gasto</div>
+                            <div class="info-value negative" id="totalGasto">R$ 0,00</div>
+                            <div class="info-detail" id="compras">0 compras</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ações Rápidas do Cartão -->
+                <div class="card-actions">
+                    <button class="btn btn-primary" onclick="irParaRecarga()">
+                        <i class="fas fa-plus"></i>
+                        Recarregar Saldo
+                    </button>
+                    <button class="btn btn-success" onclick="irParaVendas()">
+                        <i class="fas fa-shopping-cart"></i>
+                        Fazer Compra
+                    </button>
+                    <button class="btn btn-outline" onclick="imprimirConsulta()">
+                        <i class="fas fa-print"></i>
+                        Imprimir
+                    </button>
+                    <button class="btn btn-secondary" onclick="novaConsulta()">
+                        <i class="fas fa-sync-alt"></i>
+                        Nova Consulta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Histórico de Transações -->
+            <div class="card">
+                <div class="card-header-actions">
+                    <h3>
+                        <i class="fas fa-history"></i>
+                        Histórico de Transações
+                    </h3>
+                    <div class="header-controls">
+                        <select id="filtroTransacoes" class="form-select" onchange="filtrarTransacoes()">
+                            <option value="todas">Todas as transações</option>
+                            <option value="recarga">Apenas recargas</option>
+                            <option value="compra">Apenas compras</option>
+                            <option value="hoje">Apenas hoje</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline" onclick="atualizarHistorico()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="transactions-container" id="transactionsContainer">
+                    <!-- Histórico será carregado pelo JavaScript -->
+                    <div class="transactions-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Carregando histórico...</span>
+                    </div>
+                </div>
+                
+                <div class="pagination-container" id="paginationContainer" style="display: none;">
+                    <button class="btn btn-sm btn-outline" onclick="carregarMaisTransacoes()">
+                        <i class="fas fa-chevron-down"></i>
+                        Carregar mais transações
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estatísticas Detalhadas -->
+            <div class="card">
+                <h3>
+                    <i class="fas fa-chart-bar"></i>
+                    Estatísticas Detalhadas
+                </h3>
+                
+                <div class="stats-detailed">
+                    <div class="stat-row">
+                        <div class="stat-item">
+                            <span class="stat-label">Data de Criação:</span>
+                            <span class="stat-value" id="dataCriacao">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Última Transação:</span>
+                            <span class="stat-value" id="ultimaTransacao">--</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-row">
+                        <div class="stat-item">
+                            <span class="stat-label">Média por Compra:</span>
+                            <span class="stat-value" id="mediaPorCompra">R$ 0,00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Transações Hoje:</span>
+                            <span class="stat-value" id="transacoesHoje">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-row">
+                        <div class="stat-item">
+                            <span class="stat-label">Maior Recarga:</span>
+                            <span class="stat-value positive" id="maiorRecarga">R$ 0,00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Maior Compra:</span>
+                            <span class="stat-value negative" id="maiorCompra">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Consultas Recentes -->
+        <section class="recent-consultations">
+            <div class="card">
+                <h3>
+                    <i class="fas fa-clock"></i>
+                    Consultas Recentes
+                </h3>
+                
+                <div class="recent-list" id="recentConsultations">
+                    <!-- Lista será carregada pelo JavaScript -->
+                    <div class="recent-empty">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Nenhuma consulta realizada ainda</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Ações Rápidas -->
+        <section class="quick-actions-section">
+            <div class="card">
+                <h3>
+                    <i class="fas fa-bolt"></i>
+                    Ações Rápidas
+                </h3>
+                
+                <div class="quick-actions-grid">
+                    <button class="quick-action-btn" onclick="consultarUltimasTransacoes()">
+                        <i class="fas fa-list"></i>
+                        <span>Últimas Transações</span>
+                        <small>Ver movimentação recente</small>
+                    </button>
+                    
+                    <button class="quick-action-btn" onclick="verificarCartoesAtivos()">
+                        <i class="fas fa-users"></i>
+                        <span>Cartões Ativos</span>
+                        <small>Verificar status geral</small>
+                    </button>
+                    
+                    <button class="quick-action-btn" onclick="gerarRelatorioConsultas()">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Relatório</span>
+                        <small>Gerar relatório de consultas</small>
+                    </button>
+                    
+                    <button class="quick-action-btn" onclick="window.location.href='../index.html'">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                        <small>Voltar ao menu principal</small>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de Detalhes da Transação -->
+    <div class="modal" id="modalTransacaoDetalhes" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-receipt"></i>
+                    Detalhes da Transação
+                </h3>
+                <button class="modal-close" onclick="fecharModalTransacao()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="transaction-details" id="transactionDetails">
+                    <!-- Detalhes serão preenchidos pelo JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="fecharModalTransacao()">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin loading-icon"></i>
+            <span id="loadingText">Consultando cartão...</span>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer">
+        <!-- Toasts dinâmicos -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/cartao.js"></script>
+    <script src="../js/consulta.js"></script>
+
+    <!-- Script da página -->
+    <script>
+        /**
+         * Classe para gerenciar a página de consulta
+         */
+        class PaginaConsulta {
+            constructor() {
+                this.cartaoAtual = null;
+                this.consultasRecentes = this.carregarConsultasRecentes();
+                this.transacoesFiltradas = [];
+                this.transacoesCarregadas = 10;
+                this.inicializar();
+            }
+
+            inicializar() {
+                console.log('Página de consulta inicializada');
+                this.configurarEventos();
+                this.atualizarConsultasRecentes();
+                this.atualizarContadorConsultas();
+            }
+
+            configurarEventos() {
+                // Input do cartão
+                const inputCartao = document.getElementById('numeroCartao');
+                if (inputCartao) {
+                    inputCartao.addEventListener('input', (e) => {
+                        this.formatarNumeroCartao(e.target);
+                    });
+
+                    inputCartao.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            this.lerCartaoManual();
+                        }
+                    });
+                }
+
+                // Configurar callback para leitura de cartão
+                window.onCartaoLido = (resultado) => {
+                    this.processarCartaoLido(resultado);
+                };
+
+                window.onErroLeitura = (erro) => {
+                    this.mostrarErro('Erro na leitura do cartão. Tente novamente.');
+                };
+            }
+
+            async lerCartaoNFC() {
+                try {
+                    this.mostrarLoading('Aguarde, lendo cartão...');
+                    const resultado = await window.lerCartaoNFC();
+                    this.processarCartaoLido(resultado);
+                } catch (error) {
+                    this.mostrarErro('Erro na leitura NFC. Tente novamente ou digite o número manualmente.');
+                } finally {
+                    this.esconderLoading();
+                }
+            }
+
+            lerCartaoManual() {
+                const numeroCartao = document.getElementById('numeroCartao').value.replace(/\D/g, '');
+                
+                if (!numeroCartao) {
+                    this.mostrarErro('Digite o número do cartão');
+                    return;
+                }
+
+                if (numeroCartao.length !== 16) {
+                    this.mostrarErro('Número do cartão deve ter 16 dígitos');
+                    return;
+                }
+
+                const resultado = {
+                    sucesso: true,
+                    numero: numeroCartao,
+                    timestamp: new Date().toISOString(),
+                    metodo: 'manual'
+                };
+
+                this.processarCartaoLido(resultado);
+            }
+
+            processarCartaoLido(resultado) {
+                if (!resultado.sucesso) {
+                    this.mostrarErro('Falha na leitura do cartão');
+                    return;
+                }
+
+                // Busca dados do cartão
+                const dadosCartao = window.buscarCartao(resultado.numero);
+                if (!dadosCartao) {
+                    this.mostrarErro('Cartão não encontrado no sistema');
+                    return;
+                }
+
+                // Armazena cartão atual
+                this.cartaoAtual = dadosCartao;
+
+                // Atualiza interface
+                this.exibirResultadosConsulta();
+                
+                // Adiciona à lista de consultas recentes
+                this.adicionarConsultaRecente(dadosCartao);
+
+                // Preenche o input se veio de NFC
+                if (resultado.metodo === 'nfc_simulado') {
+                    document.getElementById('numeroCartao').value = this.formatarNumeroExibicao(resultado.numero);
+                }
+
+                this.mostrarSucesso('Cartão consultado com sucesso!');
+            }
+
+            exibirResultadosConsulta() {
+                if (!this.cartaoAtual) return;
+
+                const cartao = this.cartaoAtual;
+                
+                // Mostra seção de resultados
+                document.getElementById('consultationResults').style.display = 'block';
+                
+                // Scroll suave para os resultados
+                document.getElementById('consultationResults').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+
+                // Preenche informações básicas
+                document.getElementById('saldoAtual').textContent = this.formatarMoeda(cartao.saldo);
+                document.getElementById('numeroCartaoExibicao').textContent = `**** **** **** ${cartao.numero.slice(-4)}`;
+                document.getElementById('statusCartao').innerHTML = `
+                    Status: <span class="status-badge ${cartao.ativo ? 'active' : 'inactive'}">
+                        ${cartao.ativo ? 'Ativo' : 'Bloqueado'}
+                    </span>
+                `;
+                document.getElementById('totalRecarregado').textContent = this.formatarMoeda(cartao.totalRecargas);
+                document.getElementById('totalGasto').textContent = this.formatarMoeda(cartao.totalGastos);
+
+                // Calcula estatísticas
+                const recargas = cartao.transacoes.filter(t => t.tipo === 'recarga').length;
+                const compras = cartao.transacoes.filter(t => t.tipo === 'compra').length;
+                
+                document.getElementById('recargas').textContent = `${recargas} recarga${recargas !== 1 ? 's' : ''}`;
+                document.getElementById('compras').textContent = `${compras} compra${compras !== 1 ? 's' : ''}`;
+
+                // Preenche estatísticas detalhadas
+                this.preencherEstatisticasDetalhadas(cartao);
+
+                // Carrega histórico
+                this.carregarHistoricoTransacoes(cartao);
+
+                // Atualiza última atualização
+                document.getElementById('ultimaAtualizacao').textContent = 'Atualizado agora';
+            }
+
+            preencherEstatisticasDetalhadas(cartao) {
+                // Data de criação
+                document.getElementById('dataCriacao').textContent = 
+                    this.formatarData(cartao.dataCriacao);
+
+                // Última transação
+                const ultimaTransacao = cartao.transacoes[cartao.transacoes.length - 1];
+                document.getElementById('ultimaTransacao').textContent = 
+                    ultimaTransacao ? this.formatarDataHora(ultimaTransacao.data) : 'Nenhuma';
+
+                // Média por compra
+                const compras = cartao.transacoes.filter(t => t.tipo === 'compra');
+                const mediaPorCompra = compras.length > 0 ? cartao.totalGastos / compras.length : 0;
+                document.getElementById('mediaPorCompra').textContent = this.formatarMoeda(mediaPorCompra);
+
+                // Transações hoje
+                const hoje = new Date().toISOString().split('T')[0];
+                const transacoesHoje = cartao.transacoes.filter(t => t.data.startsWith(hoje)).length;
+                document.getElementById('transacoesHoje').textContent = transacoesHoje;
+
+                // Maior recarga
+                const recargas = cartao.transacoes.filter(t => t.tipo === 'recarga');
+                const maiorRecarga = recargas.length > 0 ? Math.max(...recargas.map(r => r.valor)) : 0;
+                document.getElementById('maiorRecarga').textContent = this.formatarMoeda(maiorRecarga);
+
+                // Maior compra
+                const comprasValues = compras.map(c => Math.abs(c.valor));
+                const maiorCompra = comprasValues.length > 0 ? Math.max(...comprasValues) : 0;
+                document.getElementById('maiorCompra').textContent = this.formatarMoeda(maiorCompra);
+            }
+
+            carregarHistoricoTransacoes(cartao) {
+                const container = document.getElementById('transactionsContainer');
+                if (!container) return;
+
+                this.transacoesFiltradas = [...cartao.transacoes].reverse(); // Mais recentes primeiro
+                this.transacoesCarregadas = 10;
+
+                this.renderizarTransacoes();
+            }
+
+            renderizarTransacoes() {
+                const container = document.getElementById('transactionsContainer');
+                if (!container) return;
+
+                const transacoes = this.transacoesFiltradas.slice(0, this.transacoesCarregadas);
+
+                if (transacoes.length === 0) {
+                    container.innerHTML = `
+                        <div class="transactions-empty">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Nenhuma transação encontrada</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = transacoes.map(transacao => {
+                    const isPositive = transacao.valor > 0;
+                    const icon = this.obterIconeTransacao(transacao.tipo);
+                    
+                    return `
+                        <div class="transaction-item ${transacao.tipo}" onclick="abrirDetalhesTransacao('${transacao.id}')">
+                            <div class="transaction-icon">
+                                <i class="${icon}"></i>
+                            </div>
+                            <div class="transaction-content">
+                                <div class="transaction-title">
+                                    ${this.formatarTipoTransacao(transacao.tipo)}
+                                </div>
+                                <div class="transaction-date">
+                                    ${this.formatarDataHora(transacao.data)}
+                                </div>
+                                <div class="transaction-description">
+                                    ${transacao.descricao || ''}
+                                </div>
+                            </div>
+                            <div class="transaction-value ${isPositive ? 'positive' : 'negative'}">
+                                ${isPositive ? '+' : ''}${this.formatarMoeda(Math.abs(transacao.valor))}
+                            </div>
+                            <div class="transaction-arrow">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Mostra botão de carregar mais se necessário
+                const paginationContainer = document.getElementById('paginationContainer');
+                if (paginationContainer) {
+                    paginationContainer.style.display = 
+                        this.transacoesCarregadas < this.transacoesFiltradas.length ? 'block' : 'none';
+                }
+            }
+
+            filtrarTransacoes() {
+                const filtro = document.getElementById('filtroTransacoes').value;
+                
+                if (!this.cartaoAtual) return;
+
+                let transacoesFiltradas = [...this.cartaoAtual.transacoes];
+
+                switch (filtro) {
+                    case 'recarga':
+                        transacoesFiltradas = transacoesFiltradas.filter(t => t.tipo === 'recarga');
+                        break;
+                    case 'compra':
+                        transacoesFiltradas = transacoesFiltradas.filter(t => t.tipo === 'compra');
+                        break;
+                    case 'hoje':
+                        const hoje = new Date().toISOString().split('T')[0];
+                        transacoesFiltradas = transacoesFiltradas.filter(t => t.data.startsWith(hoje));
+                        break;
+                }
+
+                this.transacoesFiltradas = transacoesFiltradas.reverse();
+                this.transacoesCarregadas = 10;
+                this.renderizarTransacoes();
+            }
+
+            carregarMaisTransacoes() {
+                this.transacoesCarregadas += 10;
+                this.renderizarTransacoes();
+            }
+
+            atualizarHistorico() {
+                if (this.cartaoAtual) {
+                    this.carregarHistoricoTransacoes(this.cartaoAtual);
+                    this.mostrarSucesso('Histórico atualizado!');
+                }
+            }
+
+            adicionarConsultaRecente(cartao) {
+                const consulta = {
+                    numero: cartao.numero,
+                    saldo: cartao.saldo,
+                    data: new Date().toISOString(),
+                    ativo: cartao.ativo
+                };
+
+                // Remove consulta existente do mesmo cartão
+                this.consultasRecentes = this.consultasRecentes.filter(c => c.numero !== cartao.numero);
+                
+                // Adiciona no início
+                this.consultasRecentes.unshift(consulta);
+
+                // Mantém apenas 10 consultas
+                this.consultasRecentes = this.consultasRecentes.slice(0, 10);
+
+                this.salvarConsultasRecentes();
+                this.atualizarConsultasRecentes();
+            }
+
+            atualizarConsultasRecentes() {
+                const container = document.getElementById('recentConsultations');
+                if (!container) return;
+
+                if (this.consultasRecentes.length === 0) {
+                    container.innerHTML = `
+                        <div class="recent-empty">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Nenhuma consulta realizada ainda</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.consultasRecentes.map(consulta => `
+                    <div class="recent-item" onclick="consultarCartao('${consulta.numero}')">
+                        <div class="recent-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="recent-content">
+                            <div class="recent-card">**** **** **** ${consulta.numero.slice(-4)}</div>
+                            <div class="recent-date">${this.calcularTempoDecorrido(consulta.data)}</div>
+                        </div>
+                        <div class="recent-value">
+                            ${this.formatarMoeda(consulta.saldo)}
+                        </div>
+                        <div class="recent-status">
+                            <span class="status-indicator ${consulta.ativo ? 'active' : 'inactive'}"></span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Funções auxiliares omitidas por brevidade...
+            formatarMoeda(valor) {
+                return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+            }
+
+            formatarNumeroCartao(input) {
+                let valor = input.value.replace(/\D/g, '');
+                if (valor.length > 16) {
+                    valor = valor.substring(0, 16);
+                }
+                valor = valor.replace(/(\d{4})(?=\d)/g, '$1 ');
+                input.value = valor;
+            }
+
+            formatarNumeroExibicao(numero) {
+                return numero.replace(/(\d{4})(?=\d)/g, '$1 ');
+            }
+
+            formatarData(dataISO) {
+                return new Date(dataISO).toLocaleDateString('pt-BR');
+            }
+
+            formatarDataHora(dataISO) {
+                return new Date(dataISO).toLocaleString('pt-BR');
+            }
+
+            formatarTipoTransacao(tipo) {
+                const tipos = {
+                    'recarga': 'Recarga',
+                    'compra': 'Compra',
+                    'correcao': 'Correção',
+                    'bloqueio': 'Bloqueio',
+                    'desbloqueio': 'Desbloqueio'
+                };
+                return tipos[tipo] || tipo;
+            }
+
+            obterIconeTransacao(tipo) {
+                const icones = {
+                    'recarga': 'fas fa-plus-circle',
+                    'compra': 'fas fa-shopping-cart',
+                    'correcao': 'fas fa-edit',
+                    'bloqueio': 'fas fa-ban',
+                    'desbloqueio': 'fas fa-unlock'
+                };
+                return icones[tipo] || 'fas fa-exchange-alt';
+            }
+
+            calcularTempoDecorrido(dataISO) {
+                const agora = new Date();
+                const data = new Date(dataISO);
+                const diferenca = agora - data;
+                const minutos = Math.floor(diferenca / (1000 * 60));
+                const horas = Math.floor(diferenca / (1000 * 60 * 60));
+                
+                if (horas > 0) return `${horas}h atrás`;
+                if (minutos > 0) return `${minutos}min atrás`;
+                return 'Agora mesmo';
+            }
+
+            carregarConsultasRecentes() {
+                try {
+                    const dados = localStorage.getItem('caixaevent_consultas_recentes');
+                    return dados ? JSON.parse(dados) : [];
+                } catch (error) {
+                    return [];
+                }
+            }
+
+            salvarConsultasRecentes() {
+                localStorage.setItem('caixaevent_consultas_recentes', JSON.stringify(this.consultasRecentes));
+            }
+
+            atualizarContadorConsultas() {
+                try {
+                    const hoje = new Date().toISOString().split('T')[0];
+                    const consultasHoje = this.consultasRecentes.filter(c => c.data.startsWith(hoje)).length;
+                    const contador = document.getElementById('consultasContador');
+                    if (contador) {
+                        contador.textContent = consultasHoje;
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar contador:', error);
+                }
+            }
+
+            mostrarLoading(texto = 'Carregando...') {
+                const overlay = document.getElementById('loadingOverlay');
+                const textoElement = document.getElementById('loadingText');
+                if (overlay) {
+                    if (textoElement) textoElement.textContent = texto;
+                    overlay.style.display = 'flex';
+                }
+            }
+
+            esconderLoading() {
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                }
+            }
+
+            mostrarErro(mensagem) {
+                this.mostrarToast(mensagem, 'error');
+            }
+
+            mostrarSucesso(mensagem) {
+                this.mostrarToast(mensagem, 'success');
+            }
+
+            mostrarToast(mensagem, tipo = 'info') {
+                const container = document.getElementById('toastContainer');
+                if (!container) return;
+
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${tipo}`;
+                
+                const icones = {
+                    success: 'fas fa-check-circle',
+                    error: 'fas fa-exclamation-circle',
+                    warning: 'fas fa-exclamation-triangle',
+                    info: 'fas fa-info-circle'
+                };
+
+                toast.innerHTML = `
+                    <i class="${icones[tipo] || icones.info}"></i>
+                    <span>${mensagem}</span>
+                    <button class="toast-close" onclick="this.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 5000);
+
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 100);
+            }
+
+            novaConsulta() {
+                this.cartaoAtual = null;
+                document.getElementById('numeroCartao').value = '';
+                document.getElementById('consultationResults').style.display = 'none';
+                document.getElementById('numeroCartao').focus();
+                this.mostrarSucesso('Pronto para nova consulta!');
+            }
+
+            voltarPagina() {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '../index.html';
+                }
+            }
+        }
+
+        // Funções globais
+        let paginaConsulta;
+
+        function lerCartaoNFC() {
+            return paginaConsulta.lerCartaoNFC();
+        }
+
+        function lerCartaoManual() {
+            paginaConsulta.lerCartaoManual();
+        }
+
+        function filtrarTransacoes() {
+            paginaConsulta.filtrarTransacoes();
+        }
+
+        function atualizarHistorico() {
+            paginaConsulta.atualizarHistorico();
+        }
+
+        function carregarMaisTransacoes() {
+            paginaConsulta.carregarMaisTransacoes();
+        }
+
+        function consultarCartao(numeroCartao) {
+            document.getElementById('numeroCartao').value = numeroCartao.replace(/(\d{4})(?=\d)/g, '$1 ');
+            paginaConsulta.lerCartaoManual();
+        }
+
+        function novaConsulta() {
+            paginaConsulta.novaConsulta();
+        }
+
+        function irParaRecarga() {
+            if (paginaConsulta.cartaoAtual) {
+                localStorage.setItem('cartao_preenchido', paginaConsulta.cartaoAtual.numero);
+            }
+            window.location.href = 'recarga.html';
+        }
+
+        function irParaVendas() {
+            if (paginaConsulta.cartaoAtual) {
+                localStorage.setItem('cartao_preenchido', paginaConsulta.cartaoAtual.numero);
+            }
+            window.location.href = 'vendas.html';
+        }
+
+        function imprimirConsulta() {
+            window.print();
+        }
+
+        function voltarPagina() {
+            paginaConsulta.voltarPagina();
+        }
+
+        function abrirDetalhesTransacao(transacaoId) {
+            // Implementar modal de detalhes
+            console.log('Detalhes da transação:', transacaoId);
+        }
+
+        function fecharModalTransacao() {
+            const modal = document.getElementById('modalTransacaoDetalhes');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function consultarUltimasTransacoes() {
+            window.location.href = '../pages/admin.html';
+        }
+
+        function verificarCartoesAtivos() {
+            window.location.href = '../pages/admin.html';
+        }
+
+        function gerarRelatorioConsultas() {
+            window.location.href = '../pages/admin.html';
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof gerenciadorCartao !== 'undefined') {
+                paginaConsulta = new PaginaConsulta();
+            } else {
+                setTimeout(() => {
+                    paginaConsulta = new PaginaConsulta();
+                }, 100);
+            }
+        });
+
+        console.log('Sistema de consulta CaixaEvent carregado!');
+    </script>
+</body>
+</html>
