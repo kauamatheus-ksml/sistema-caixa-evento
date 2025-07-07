@@ -1,1 +1,1 @@
-echo "# sistema-caixa-evento" > README.md
+echo "# sistema-caixa-evento famoso sce" > README.md
