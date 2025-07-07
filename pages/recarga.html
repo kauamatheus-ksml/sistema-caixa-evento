@@ -26,7 +26,7 @@
                 <i class="fas fa-wifi nfc-icon"></i>
             </div>
             
-            <div class="nfc-status">
+            <div class="nfc-status" id="statusNFC">
                 <i class="fas fa-wifi"></i>
                 <span>Toque na área acima para simular NFC</span>
             </div>
@@ -43,10 +43,10 @@
             </button>
             
             <!-- Saldo Atual (aparece após leitura) -->
-            <div class="current-balance" id="saldoAtual">
+            <div class="current-balance" id="saldoAtual" style="display: none;">
                 <div class="balance-label">Saldo Atual</div>
-                <div class="balance-value" id="valorSaldo">R$ 0,00</div>
-                <div class="card-info" id="infoCartao">Cartão ****</div>
+                <div class="balance-value" id="valorSaldo"></div>
+                <div class="card-info" id="infoCartao"></div>
             </div>
         </div>
         
@@ -72,7 +72,7 @@
                    step="0.01">
             
             <!-- Botão de Recarga -->
-            <button class="recharge-btn" onclick="realizarRecarga()" id="btnRecarregar">
+            <button class="recharge-btn" onclick="realizarRecarga()" id="btnRecarregar" disabled>
                 <i class="fas fa-plus"></i> RECARREGAR SALDO
             </button>
         </div>
@@ -81,47 +81,39 @@
         <div class="card">
             <h3>Últimas Recargas</h3>
             <div class="history-container" id="historicoRecargas">
-                <div class="history-item">
-                    <div class="history-info">
-                        <div class="history-card">Cartão **** 1234</div>
-                        <div class="history-date">Hoje, 14:30</div>
-                    </div>
-                    <div class="history-amount">+ R$ 50,00</div>
-                </div>
-                <div class="history-item">
-                    <div class="history-info">
-                        <div class="history-card">Cartão **** 5678</div>
-                        <div class="history-date">Hoje, 14:15</div>
-                    </div>
-                    <div class="history-amount">+ R$ 25,00</div>
-                </div>
-                <div class="history-item">
-                    <div class="history-info">
-                        <div class="history-card">Cartão **** 9012</div>
-                        <div class="history-date">Hoje, 13:45</div>
-                    </div>
-                    <div class="history-amount">+ R$ 100,00</div>
+                <!-- Conteúdo será preenchido pelo JavaScript -->
+                <div class="no-history" id="semHistorico">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Nenhuma recarga realizada ainda</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Modal de Confirmação -->
-    <div class="modal" id="modalConfirmacao">
+    <div class="modal" id="modalConfirmacao" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Recarga Realizada</h3>
                 <i class="fas fa-check-circle success-icon"></i>
             </div>
             <div class="modal-body">
-                <p>Recarga de <strong id="valorRecarga">R$ 0,00</strong> realizada com sucesso!</p>
-                <p>Cartão: <strong id="cartaoRecarga">****</strong></p>
-                <p>Novo saldo: <strong id="novoSaldo">R$ 0,00</strong></p>
+                <p>Recarga de <strong id="valorRecarga"></strong> realizada com sucesso!</p>
+                <p>Cartão: <strong id="cartaoRecarga"></strong></p>
+                <p>Novo saldo: <strong id="novoSaldo"></strong></p>
             </div>
             <div class="modal-footer">
                 <button class="modal-btn" onclick="fecharModal()">OK</button>
                 <button class="modal-btn secondary" onclick="novaRecarga()">Nova Recarga</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin loading-icon"></i>
+            <span id="loadingText">Processando...</span>
         </div>
     </div>
 
