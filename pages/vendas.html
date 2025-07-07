@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<!-- Arquivo: vendas.html - Interface de vendas do CaixaEvent -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaixaEvent - Sistema de Vendas</title>
+    <meta name="description" content="Interface de vendas com carrinho e pagamento por cartão NFC">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="back-btn" onclick="voltarPagina()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1>Sistema de Vendas</h1>
+        <div class="header-actions">
+            <div class="sales-counter">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Vendas hoje: <strong id="vendasContador">0</strong></span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Layout Principal -->
+    <div class="container">
+        <div class="two-column">
+            <!-- Coluna Principal - Produtos -->
+            <div class="main-content">
+                <!-- Filtros e Busca -->
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Buscar:</label>
+                        <input type="text" 
+                               id="buscaProdutos" 
+                               class="form-input" 
+                               placeholder="Digite o nome do produto...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Categoria:</label>
+                        <select id="filtroCategoria" class="form-select">
+                            <option value="todos">Todas as categorias</option>
+                            <option value="bebidas">Bebidas</option>
+                            <option value="comidas">Comidas</option>
+                            <option value="snacks">Snacks</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Filtros:</label>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-categoria="todos">Todos</button>
+                            <button class="filter-btn" data-categoria="bebidas">
+                                <i class="fas fa-wine-bottle"></i> Bebidas
+                            </button>
+                            <button class="filter-btn" data-categoria="comidas">
+                                <i class="fas fa-pizza-slice"></i> Comidas
+                            </button>
+                            <button class="filter-btn" data-categoria="snacks">
+                                <i class="fas fa-cookie-bite"></i> Snacks
+                            </button>
+                            <button class="filter-btn" data-categoria="outros">
+                                <i class="fas fa-ellipsis-h"></i> Outros
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid de Produtos -->
+                <div class="products-section">
+                    <div class="products-header">
+                        <h3>
+                            <i class="fas fa-th-large"></i>
+                            Produtos Disponíveis
+                        </h3>
+                        <div class="products-count">
+                            <span id="produtosContador">0 produtos</span>
+                        </div>
+                    </div>
+                    
+                    <div class="products-grid" id="productsGrid">
+                        <!-- Produtos serão carregados pelo JavaScript -->
+                        <div class="products-loading">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Carregando produtos...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar - Carrinho e Pagamento -->
+            <div class="sidebar">
+                <!-- Identificação do Cartão -->
+                <div class="card">
+                    <h3>
+                        <i class="fas fa-credit-card"></i>
+                        Identificar Cartão
+                    </h3>
+                    
+                    <!-- Área NFC -->
+                    <div class="nfc-area" onclick="lerCartaoNFC()">
+                        <i class="fas fa-wifi nfc-icon"></i>
+                        <div class="nfc-text">
+                            <strong>Simular NFC</strong>
+                            <span>Toque aqui para ler cartão</span>
+                        </div>
+                    </div>
+                    
+                    <div class="nfc-status" id="statusNFC">
+                        <i class="fas fa-wifi"></i>
+                        <span>Aguardando leitura do cartão...</span>
+                    </div>
+                    
+                    <!-- Input Manual -->
+                    <div class="manual-input">
+                        <input type="text" 
+                               class="card-input" 
+                               id="numeroCartao"
+                               placeholder="Ou digite o número do cartão..." 
+                               maxlength="19">
+                        <button class="manual-btn" onclick="lerCartaoManual()">
+                            <i class="fas fa-keyboard"></i>
+                            Usar Manual
+                        </button>
+                    </div>
+                    
+                    <!-- Saldo do Cartão -->
+                    <div class="balance-display" id="balanceDisplay" style="display: none;">
+                        <div class="balance-info">
+                            <div class="balance-label">Saldo Disponível</div>
+                            <div class="balance-value" id="saldoCartao">R$ 0,00</div>
+                            <div class="card-info" id="infoCartao">Cartão não identificado</div>
+                        </div>
+                        <div class="balance-status" id="statusCartao">
+                            <span class="status-indicator active"></span>
+                            <span>Cartão ativo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carrinho de Compras -->
+                <div class="cart">
+                    <h3>
+                        <i class="fas fa-shopping-cart"></i>
+                        Carrinho de Compras
+                        <span class="cart-badge" id="cartBadge">0</span>
+                    </h3>
+                    
+                    <div class="cart-items" id="cartItems">
+                        <div class="cart-empty">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Carrinho vazio</span>
+                            <small>Adicione produtos para começar a venda</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Resumo do Carrinho -->
+                    <div class="cart-summary" id="cartSummary" style="display: none;">
+                        <div class="summary-row">
+                            <span>Itens:</span>
+                            <span id="totalItens">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span class="subtotal-value" id="subtotalValue">R$ 0,00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span class="total-label">Total:</span>
+                            <span class="total-value" id="totalValue">R$ 0,00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Ações do Carrinho -->
+                    <div class="cart-actions">
+                        <button class="btn btn-secondary btn-block" onclick="limparCarrinho()" id="btnLimparCarrinho" style="display: none;">
+                            <i class="fas fa-trash"></i>
+                            Limpar Carrinho
+                        </button>
+                        
+                        <button class="btn btn-success btn-lg btn-block" onclick="finalizarVenda()" id="btnFinalizarVenda" disabled>
+                            <i class="fas fa-check"></i>
+                            FINALIZAR VENDA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ações Rápidas -->
+                <div class="quick-actions-panel">
+                    <h4>
+                        <i class="fas fa-bolt"></i>
+                        Ações Rápidas
+                    </h4>
+                    
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-btn" onclick="window.location.href='recarga.html'">
+                            <i class="fas fa-plus"></i>
+                            Recarga
+                        </button>
+                        
+                        <button class="quick-action-btn" onclick="window.location.href='consulta.html'">
+                            <i class="fas fa-search"></i>
+                            Consulta
+                        </button>
+                        
+                        <button class="quick-action-btn" onclick="atualizarProdutos()">
+                            <i class="fas fa-sync-alt"></i>
+                            Atualizar
+                        </button>
+                        
+                        <button class="quick-action-btn" onclick="window.location.href='estoque.html'">
+                            <i class="fas fa-boxes"></i>
+                            Estoque
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Venda -->
+    <div class="modal" id="modalConfirmacaoVenda" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-check-circle success-icon"></i>
+                    Venda Realizada com Sucesso!
+                </h3>
+            </div>
+            <div class="modal-body">
+                <div class="venda-resumo">
+                    <div class="resumo-item">
+                        <span>Valor Total:</span>
+                        <strong id="vendaValor">R$ 0,00</strong>
+                    </div>
+                    <div class="resumo-item">
+                        <span>Itens Vendidos:</span>
+                        <strong id="vendaItens">0 item(s)</strong>
+                    </div>
+                    <div class="resumo-item">
+                        <span>Cartão:</span>
+                        <strong id="vendaCartao">**** 0000</strong>
+                    </div>
+                    <div class="resumo-item">
+                        <span>Novo Saldo:</span>
+                        <strong id="vendaSaldoNovo">R$ 0,00</strong>
+                    </div>
+                    <div class="resumo-item">
+                        <span>Data/Hora:</span>
+                        <strong id="vendaDataHora">--</strong>
+                    </div>
+                </div>
+                
+                <div class="venda-produtos" id="vendaProdutos">
+                    <!-- Lista de produtos vendidos -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="novaVenda()">
+                    <i class="fas fa-plus"></i>
+                    Nova Venda
+                </button>
+                <button class="btn btn-secondary" onclick="imprimirComprovante()">
+                    <i class="fas fa-print"></i>
+                    Imprimir
+                </button>
+                <button class="btn btn-outline" onclick="fecharModalVenda()">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes do Produto -->
+    <div class="modal" id="modalProdutoDetalhes" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="produtoDetalheNome">Detalhes do Produto</h3>
+                <button class="modal-close" onclick="fecharModalProduto()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="produto-detalhes">
+                    <div class="produto-imagem" id="produtoDetalheImagem">🍕</div>
+                    <div class="produto-info">
+                        <div class="info-item">
+                            <span>Descrição:</span>
+                            <span id="produtoDetalheDescricao">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Preço:</span>
+                            <span id="produtoDetalhePreco">R$ 0,00</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Categoria:</span>
+                            <span id="produtoDetalheCategoria">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Em estoque:</span>
+                            <span id="produtoDetalheEstoque">0 unidades</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quantidade-selector">
+                    <label for="quantidadeProduto">Quantidade:</label>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" onclick="alterarQuantidade(-1)">-</button>
+                        <input type="number" id="quantidadeProduto" value="1" min="1" max="10">
+                        <button class="qty-btn" onclick="alterarQuantidade(1)">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="adicionarProdutoCarrinho()" id="btnAdicionarProduto">
+                    <i class="fas fa-cart-plus"></i>
+                    Adicionar ao Carrinho
+                </button>
+                <button class="btn btn-secondary" onclick="fecharModalProduto()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin loading-icon"></i>
+            <span id="loadingText">Processando venda...</span>
+        </div>
+    </div>
+
+    <!-- Toast de Notificações -->
+    <div class="toast-container" id="toastContainer">
+        <!-- Toasts serão adicionados dinamicamente -->
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/cartao.js"></script>
+    <script src="../js/vendas.js"></script>
+
+    <!-- Funções auxiliares -->
+    <script>
+        // Função para limpar carrinho
+        function limparCarrinho() {
+            if (paginaVendas && confirm('Tem certeza que deseja limpar o carrinho?')) {
+                paginaVendas.limparCarrinho();
+                mostrarToast('Carrinho limpo com sucesso!', 'success');
+            }
+        }
+
+        // Função para nova venda
+        function novaVenda() {
+            fecharModalVenda();
+            if (paginaVendas) {
+                paginaVendas.limparCarrinho();
+                paginaVendas.cartaoAtual = null;
+                paginaVendas.atualizarInterfaceCartao();
+                paginaVendas.validarFormulario();
+                
+                // Reset campos
+                document.getElementById('numeroCartao').value = '';
+                document.getElementById('balanceDisplay').style.display = 'none';
+                
+                mostrarToast('Pronto para nova venda!', 'info');
+            }
+        }
+
+        // Função para fechar modal de venda
+        function fecharModalVenda() {
+            const modal = document.getElementById('modalConfirmacaoVenda');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Função para imprimir comprovante
+        function imprimirComprovante() {
+            window.print();
+            mostrarToast('Enviado para impressão', 'info');
+        }
+
+        // Função para atualizar produtos
+        function atualizarProdutos() {
+            if (paginaVendas) {
+                paginaVendas.renderizarProdutos();
+                mostrarToast('Produtos atualizados!', 'success');
+            }
+        }
+
+        // Modal de detalhes do produto
+        let produtoSelecionado = null;
+
+        function abrirModalProduto(produtoId) {
+            if (!paginaVendas || !paginaVendas.produtos[produtoId]) return;
+            
+            produtoSelecionado = paginaVendas.produtos[produtoId];
+            
+            document.getElementById('produtoDetalheNome').textContent = produtoSelecionado.nome;
+            document.getElementById('produtoDetalheImagem').textContent = produtoSelecionado.emoji || '📦';
+            document.getElementById('produtoDetalheDescricao').textContent = produtoSelecionado.descricao;
+            document.getElementById('produtoDetalhePreco').textContent = `R$ ${produtoSelecionado.preco.toFixed(2).replace('.', ',')}`;
+            document.getElementById('produtoDetalheCategoria').textContent = produtoSelecionado.categoria;
+            document.getElementById('produtoDetalheEstoque').textContent = `${produtoSelecionado.estoque} unidades`;
+            
+            document.getElementById('quantidadeProduto').value = 1;
+            document.getElementById('quantidadeProduto').max = Math.min(produtoSelecionado.estoque, 10);
+            
+            const modal = document.getElementById('modalProdutoDetalhes');
+            modal.style.display = 'flex';
+        }
+
+        function fecharModalProduto() {
+            const modal = document.getElementById('modalProdutoDetalhes');
+            modal.style.display = 'none';
+            produtoSelecionado = null;
+        }
+
+        function alterarQuantidade(delta) {
+            const input = document.getElementById('quantidadeProduto');
+            const novaQuantidade = parseInt(input.value) + delta;
+            
+            if (novaQuantidade >= 1 && novaQuantidade <= parseInt(input.max)) {
+                input.value = novaQuantidade;
+            }
+        }
+
+        function adicionarProdutoCarrinho() {
+            if (!produtoSelecionado || !paginaVendas) return;
+            
+            const quantidade = parseInt(document.getElementById('quantidadeProduto').value);
+            paginaVendas.adicionarAoCarrinho(produtoSelecionado.id, quantidade);
+            
+            fecharModalProduto();
+            mostrarToast(`${produtoSelecionado.nome} adicionado ao carrinho!`, 'success');
+        }
+
+        // Sistema de Toast
+        function mostrarToast(mensagem, tipo = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${tipo}`;
+            
+            const icones = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            };
+
+            toast.innerHTML = `
+                <i class="${icones[tipo] || icones.info}"></i>
+                <span>${mensagem}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove após 5 segundos
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 5000);
+
+            // Animação de entrada
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+        }
+
+        // Contador de vendas
+        function atualizarContadorVendas() {
+            try {
+                const relatorios = gerenciadorCartao.obterRelatorios();
+                const contador = document.getElementById('vendasContador');
+                if (contador) {
+                    contador.textContent = relatorios.estatisticasHoje.vendas;
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar contador:', error);
+            }
+        }
+
+        // Atualiza contador a cada 30 segundos
+        setInterval(atualizarContadorVendas, 30000);
+        
+        // Atualiza contador quando página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(atualizarContadorVendas, 1000);
+        });
+    </script>
+</body>
+</html>
