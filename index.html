@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<!-- Arquivo: index.html - Dashboard principal do CaixaEvent -->
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaixaEvent Pro - Sistema de Controle de Caixa</title>
+    <meta name="description" content="Sistema profissional de controle de caixa para eventos com cartões NFC">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+</head>
+<body>
+    <!-- Header Principal -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <i class="fas fa-cash-register"></i>
+                <h1>CaixaEvent Pro</h1>
+            </div>
+            <div class="header-info">
+                <div class="current-time" id="currentTime"></div>
+                <div class="event-status">
+                    <span class="status-indicator active"></span>
+                    <span>Sistema Online</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <div class="container">
+        <!-- Seção de Boas-vindas -->
+        <section class="welcome-section">
+            <h2>Bem-vindo ao CaixaEvent Pro</h2>
+            <p>Sistema completo de controle de caixa para eventos com tecnologia NFC</p>
+            <div class="last-update">
+                Última atualização: <span id="lastUpdate">Carregando...</span>
+            </div>
+        </section>
+
+        <!-- Dashboard de Estatísticas -->
+        <section class="dashboard-stats">
+            <h3 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Estatísticas do Sistema
+            </h3>
+            
+            <div class="stats-grid">
+                <!-- Total de Vendas Hoje -->
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalVendasHoje">R$ 0,00</div>
+                        <div class="stat-label">Vendas Hoje</div>
+                        <div class="stat-change positive" id="changeVendas">
+                            <i class="fas fa-arrow-up"></i>
+                            <span id="percentualVendas">+0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cartões Ativos -->
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="cartoesAtivos">0</div>
+                        <div class="stat-label">Cartões Ativos</div>
+                        <div class="stat-detail" id="totalCartoes">
+                            Total: <span>0</span> cartões
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saldo Total do Sistema -->
+                <div class="stat-card purple">
+                    <div class="stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="saldoTotalSistema">R$ 0,00</div>
+                        <div class="stat-label">Saldo Total Sistema</div>
+                        <div class="stat-detail" id="recargasHoje">
+                            Recargas hoje: <span>R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produtos em Alerta -->
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="produtosAlerta">0</div>
+                        <div class="stat-label">Produtos em Falta</div>
+                        <div class="stat-detail" id="totalProdutos">
+                            Total: <span>0</span> produtos
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Menu Principal de Navegação -->
+        <section class="main-navigation">
+            <h3 class="section-title">
+                <i class="fas fa-th-large"></i>
+                Menu Principal
+            </h3>
+            
+            <div class="nav-menu">
+                <!-- Recarga de Saldo -->
+                <a href="pages/recarga.html" class="nav-card recarga">
+                    <div class="nav-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h4>Recarga de Saldo</h4>
+                        <p>Adicionar créditos aos cartões de clientes</p>
+                        <div class="nav-stats">
+                            <span id="recargasHojeCount">0 recargas hoje</span>
+                        </div>
+                    </div>
+                    <div class="nav-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <!-- Sistema de Vendas -->
+                <a href="pages/vendas.html" class="nav-card vendas">
+                    <div class="nav-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h4>Sistema de Vendas</h4>
+                        <p>Processar vendas e débitos nos cartões</p>
+                        <div class="nav-stats">
+                            <span id="vendasHojeCount">0 vendas hoje</span>
+                        </div>
+                    </div>
+                    <div class="nav-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <!-- Consultar Saldo -->
+                <a href="pages/consulta.html" class="nav-card consulta">
+                    <div class="nav-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h4>Consultar Saldo</h4>
+                        <p>Verificar saldo e histórico de cartões</p>
+                        <div class="nav-stats">
+                            <span id="consultasRecentes">Últimas consultas</span>
+                        </div>
+                    </div>
+                    <div class="nav-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <!-- Gerenciar Estoque -->
+                <a href="pages/estoque.html" class="nav-card estoque">
+                    <div class="nav-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h4>Gerenciar Estoque</h4>
+                        <p>Controlar produtos e inventário</p>
+                        <div class="nav-stats">
+                            <span id="alertasEstoque">0 alertas de estoque</span>
+                        </div>
+                    </div>
+                    <div class="nav-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+
+                <!-- Administração -->
+                <a href="pages/admin.html" class="nav-card admin">
+                    <div class="nav-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="nav-content">
+                        <h4>Administração</h4>
+                        <p>Relatórios, backup e configurações</p>
+                        <div class="nav-stats">
+                            <span>Acesso restrito</span>
+                        </div>
+                    </div>
+                    <div class="nav-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Seção de Atividades Recentes -->
+        <section class="recent-activities">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-history"></i>
+                    Atividades Recentes
+                </h3>
+                <button class="btn btn-outline btn-sm" onclick="atualizarDashboard()">
+                    <i class="fas fa-sync-alt"></i>
+                    Atualizar
+                </button>
+            </div>
+
+            <div class="activities-container">
+                <div class="activities-grid">
+                    <!-- Últimas Transações -->
+                    <div class="activity-card">
+                        <h4>
+                            <i class="fas fa-exchange-alt"></i>
+                            Últimas Transações
+                        </h4>
+                        <div class="activity-list" id="ultimasTransacoes">
+                            <div class="activity-item loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Carregando transações...</span>
+                            </div>
+                        </div>
+                        <a href="pages/admin.html" class="activity-link">
+                            Ver relatório completo <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Produtos Mais Vendidos -->
+                    <div class="activity-card">
+                        <h4>
+                            <i class="fas fa-trophy"></i>
+                            Produtos Mais Vendidos
+                        </h4>
+                        <div class="activity-list" id="produtosMaisVendidos">
+                            <div class="activity-item loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Carregando produtos...</span>
+                            </div>
+                        </div>
+                        <a href="pages/estoque.html" class="activity-link">
+                            Ver estoque completo <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Alertas do Sistema -->
+                    <div class="activity-card">
+                        <h4>
+                            <i class="fas fa-bell"></i>
+                            Alertas do Sistema
+                        </h4>
+                        <div class="activity-list" id="alertasSistema">
+                            <div class="activity-item success">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Sistema funcionando normalmente</span>
+                            </div>
+                        </div>
+                        <a href="pages/admin.html" class="activity-link">
+                            Ver configurações <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Acesso Rápido -->
+        <section class="quick-actions">
+            <h3 class="section-title">
+                <i class="fas fa-bolt"></i>
+                Ações Rápidas
+            </h3>
+            
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn" onclick="window.location.href='pages/recarga.html'">
+                    <i class="fas fa-plus"></i>
+                    Nova Recarga
+                </button>
+                
+                <button class="quick-action-btn" onclick="window.location.href='pages/vendas.html'">
+                    <i class="fas fa-shopping-bag"></i>
+                    Nova Venda
+                </button>
+                
+                <button class="quick-action-btn" onclick="abrirConsultaRapida()">
+                    <i class="fas fa-search"></i>
+                    Consulta Rápida
+                </button>
+                
+                <button class="quick-action-btn" onclick="gerarRelatorioRapido()">
+                    <i class="fas fa-file-alt"></i>
+                    Relatório Hoje
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de Consulta Rápida -->
+    <div class="modal" id="modalConsultaRapida" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Consulta Rápida de Cartão</h3>
+                <button class="modal-close" onclick="fecharConsultaRapida()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="numeroCartaoRapido" class="form-label">Número do Cartão</label>
+                    <input type="text" 
+                           id="numeroCartaoRapido" 
+                           class="form-input" 
+                           placeholder="Digite o número do cartão..."
+                           maxlength="19">
+                </div>
+                
+                <div class="nfc-area-small" onclick="lerCartaoNFCRapido()">
+                    <i class="fas fa-wifi nfc-icon-small"></i>
+                    <span>Ou toque aqui para simular NFC</span>
+                </div>
+                
+                <div class="consulta-resultado" id="resultadoConsultaRapida" style="display: none;">
+                    <!-- Resultado será preenchido pelo JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="consultarCartaoRapido()">
+                    <i class="fas fa-search"></i>
+                    Consultar
+                </button>
+                <button class="btn btn-secondary" onclick="fecharConsultaRapida()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h4>CaixaEvent Pro v1.0</h4>
+                    <p>Sistema de controle de caixa para eventos</p>
+                </div>
+                <div class="footer-stats">
+                    <div class="footer-stat">
+                        <span class="footer-stat-label">Uptime:</span>
+                        <span class="footer-stat-value" id="systemUptime">100%</span>
+                    </div>
+                    <div class="footer-stat">
+                        <span class="footer-stat-label">Versão:</span>
+                        <span class="footer-stat-value">1.0.0</span>
+                    </div>
+                    <div class="footer-stat">
+                        <span class="footer-stat-label">Suporte:</span>
+                        <span class="footer-stat-value">24/7</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay Global -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin loading-icon"></i>
+            <span id="loadingText">Carregando...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/cartao.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Service Worker para PWA (futuro) -->
+    <script>
+        // Registra service worker se disponível
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registrado com sucesso');
+                    })
+                    .catch(function(error) {
+                        console.log('Falha ao registrar ServiceWorker');
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
