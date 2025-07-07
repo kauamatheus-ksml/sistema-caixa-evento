@@ -21,7 +21,7 @@ class DatabaseConfig {
     private $host = 'srv406.hstgr.io'; // Host do banco de dados fornecido pela Hostinger
     private $db_name = 'u383946504_sce'; // Nome do banco de dados
     private $username = 'u383946504_sce'; // Nome de usuário do banco de dados
-    private $password = 'Aaku_2004'; // Senha do banco de dados
+    private $password = 'Aaku_2004@'; // Senha do banco de dados
     private $charset = 'utf8mb4'; // Conjunto de caracteres para a conexão
 
     // Propriedade pública para a conexão PDO
